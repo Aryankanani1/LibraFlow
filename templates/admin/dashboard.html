@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Admin Dashboard</h2>
+  <p class="text-muted">Welcome, {{ current_user.name }} ({{ current_user.employee_id or 'Librarian' }})</p>
+</div>
+
+<div class="stats-grid stats-grid-5">
+  <div class="stat-card stat-blue">
+    <div class="stat-number">{{ total_books }}</div>
+    <div class="stat-label">Total Books</div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-number">{{ available_copies }}</div>
+    <div class="stat-label">Available Copies</div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-number">{{ active_loans }}</div>
+    <div class="stat-label">Active Loans</div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-number">{{ overdue_loans|length }}</div>
+    <div class="stat-label">Overdue</div>
+  </div>
+  <div class="stat-card stat-purple">
+    <div class="stat-number">{{ pending_reservations }}</div>
+    <div class="stat-label">Pending Requests</div>
+  </div>
+</div>
+
+<div class="quick-actions-bar">
+  <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">+ Add Book</a>
+  <a href="{{ url_for('admin.issue_book') }}" class="btn btn-outline">Issue Book</a>
+  <a href="{{ url_for('admin.scan_barcode') }}" class="btn btn-outline">Scan Barcode</a>
+  <a href="{{ url_for('admin.reservations') }}" class="btn btn-outline">Approve Requests</a>
+  <a href="{{ url_for('admin.reports') }}" class="btn btn-outline">Generate Report</a>
+</div>
+
+{% if overdue_loans %}
+<div class="card mt-4">
+  <div class="card-header">
+    <h3 class="text-red">Overdue Books</h3>
+    <a href="{{ url_for('admin.overdue') }}" class="btn btn-sm btn-outline">View All</a>
+  </div>
+  <div class="card-body">
+    <table class="table">
+      <thead>
+        <tr><th>Student</th><th>Book</th><th>Due Date</th><th>Fine</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for loan in overdue_loans[:5] %}
+        <tr>
+          <td>{{ loan.student.name }}<br><small class="text-muted">{{ loan.student.email }}</small></td>
+          <td>{{ loan.copy.book.title }}</td>
+          <td class="text-red">{{ loan.due_date.strftime('%b %d, %Y') }}</td>
+          <td class="text-red">${{ "%.2f"|format(loan.fine_amount()) }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.return_book', loan_id=loan.id) }}">
+              <button type="submit" class="btn btn-sm btn-primary">Mark Returned</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mt-4">
+  <div class="card-header">
+    <h3>Recent Loans</h3>
+    <a href="{{ url_for('admin.loans') }}" class="btn btn-sm btn-outline">View All</a>
+  </div>
+  <div class="card-body">
+    {% if recent_loans %}
+    <table class="table">
+      <thead>
+        <tr><th>Student</th><th>Book</th><th>Issue Date</th><th>Due Date</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for loan in recent_loans %}
+        <tr>
+          <td>{{ loan.student.name }}</td>
+          <td>{{ loan.copy.book.title }}</td>
+          <td>{{ loan.issue_date.strftime('%b %d, %Y') }}</td>
+          <td>{{ loan.due_date.strftime('%b %d, %Y') }}</td>
+          <td>
+            {% if loan.status == 'returned' %}
+              <span class="badge badge-success">Returned</span>
+            {% elif loan.is_overdue() %}
+              <span class="badge badge-danger">Overdue</span>
+            {% else %}
+              <span class="badge badge-blue">Active</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-muted text-center">No loans yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

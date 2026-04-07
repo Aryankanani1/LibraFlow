@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Issue Book — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Issue Book</h2>
+  <a href="{{ url_for('admin.loans') }}" class="btn btn-outline">← Back</a>
+</div>
+
+<div class="card" style="max-width:500px">
+  <div class="card-body">
+    <form method="POST">
+      <div class="form-group">
+        <label>Book Barcode *</label>
+        <input type="text" name="barcode" class="form-input" required autofocus
+               placeholder="Scan or enter barcode">
+      </div>
+      <div class="form-group">
+        <label>Student Email *</label>
+        <input type="email" name="student_email" class="form-input" required
+               placeholder="student@example.com">
+      </div>
+      <div class="form-group">
+        <label>Loan Duration (days)</label>
+        <input type="number" name="loan_days" class="form-input" value="14" min="1" max="90">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Issue Book</button>
+        <a href="{{ url_for('admin.loans') }}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

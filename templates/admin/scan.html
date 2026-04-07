@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Scan Barcode — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Scan Barcode</h2>
+</div>
+
+<div class="card" style="max-width:500px">
+  <div class="card-body">
+    <form method="POST">
+      <div class="form-group">
+        <label>Enter or Scan Barcode</label>
+        <input type="text" name="barcode" class="form-input" required autofocus
+               placeholder="Scan barcode or type it here">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Look Up</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if result %}
+<div class="card mt-4" style="max-width:500px">
+  <div class="card-header"><h3>Scan Result</h3></div>
+  <div class="card-body">
+    {% if result.found %}
+      <table class="table table-compact">
+        <tr><th>Title</th><td>{{ result.book.title }}</td></tr>
+        <tr><th>Author</th><td>{{ result.book.author }}</td></tr>
+        <tr><th>ISBN</th><td>{{ result.book.isbn }}</td></tr>
+        <tr><th>Copy Code</th><td>{{ result.copy_code }}</td></tr>
+        <tr><th>Barcode</th><td>{{ result.barcode }}</td></tr>
+        <tr><th>Status</th>
+          <td>
+            <span class="badge {% if result.status == 'available' %}badge-success{% elif result.status == 'issued' %}badge-danger{% else %}badge-warning{% endif %}">
+              {{ result.status|capitalize }}
+            </span>
+          </td>
+        </tr>
+        <tr><th>Shelf</th><td>{{ result.shelf_location }}</td></tr>
+      </table>
+      <div class="form-actions mt-3">
+        {% if result.status == 'available' or result.status == 'reserved' %}
+          <a href="{{ url_for('admin.issue_book') }}" class="btn btn-primary">Issue This Book</a>
+        {% elif result.status == 'issued' %}
+          <span class="text-muted">This copy is currently issued.</span>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="alert alert-danger">{{ result.message }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

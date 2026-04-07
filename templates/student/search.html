@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Search Books — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Search Books</h2>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="GET" action="{{ url_for('student.search') }}" class="search-form">
+      <div class="search-row">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search books..." class="form-input search-input" autofocus>
+        <select name="type" class="form-input search-select">
+          <option value="all" {% if search_type == 'all' %}selected{% endif %}>All Fields</option>
+          <option value="title" {% if search_type == 'title' %}selected{% endif %}>Title</option>
+          <option value="author" {% if search_type == 'author' %}selected{% endif %}>Author</option>
+          <option value="category" {% if search_type == 'category' %}selected{% endif %}>Category</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if query %}
+  <p class="result-count">{{ books|length }} result(s) for "<strong>{{ query }}</strong>"</p>
+{% endif %}
+
+{% if books %}
+  <div class="books-grid">
+    {% for book in books %}
+    <div class="book-card">
+      <div class="book-card-header">
+        <div class="book-icon">📖</div>
+        <div>
+          <h4 class="book-title">{{ book.title }}</h4>
+          <p class="book-author">by {{ book.author }}</p>
+        </div>
+      </div>
+      <div class="book-meta">
+        <span class="badge badge-category">{{ book.category }}</span>
+        <span class="text-muted">{{ book.publisher }}</span>
+      </div>
+      <div class="book-availability">
+        <span class="availability-label">Available:</span>
+        <span class="availability-count {% if book.available_copies_count() > 0 %}text-green{% else %}text-red{% endif %}">
+          {{ book.available_copies_count() }} / {{ book.copies.count() }}
+        </span>
+      </div>
+
+      {% if book.available_copies_count() > 0 %}
+        <div class="book-copies">
+          {% for copy in book.copies.filter_by(status='available').limit(3) %}
+            <div class="copy-row">
+              <span class="copy-code">{{ copy.copy_code }}</span>
+              <span class="shelf-location">{{ copy.shelf_location }}</span>
+              <form method="POST" action="{{ url_for('student.reserve', copy_id=copy.id) }}" style="display:inline">
+                <button type="submit" class="btn btn-sm btn-outline" title="Reserve">Reserve</button>
+              </form>
+              <form method="POST" action="{{ url_for('student.borrow', copy_id=copy.id) }}" style="display:inline">
+                <button type="submit" class="btn btn-sm btn-primary" title="Borrow">Borrow</button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted text-center mt-2">No copies available</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+{% elif query %}
+  <div class="empty-state">
+    <p>No books found for "{{ query }}".</p>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <p>Enter a search term above to find books.</p>
+  </div>
+{% endif %}
+{% endblock %}

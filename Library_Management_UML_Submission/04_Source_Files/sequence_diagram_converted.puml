@@ -1,0 +1,59 @@
+@startuml
+title Library Management System - Combined Sequence Flows
+
+actor "Student/User" as Student
+participant "Web UI" as UI
+participant "Catalog Service" as Catalog
+participant "Reservation Service" as Reservation
+actor "Librarian/Admin" as Librarian
+participant "Loan Service" as Loan
+database "Inventory DB" as DB
+participant "Report Service" as Report
+
+== Book Reservation and Issue Flow ==
+
+Student -> UI : Search book by title / author
+UI -> Catalog : findAvailableBooks(criteria)
+Catalog -> DB : checkAvailability(bookId / filters)
+DB --> Catalog : available copies and status
+Catalog --> UI : matching books with availability
+
+Student -> UI : Select book and reserve
+UI -> Reservation : createReservation(studentId, bookId)
+Reservation -> DB : holdAvailableCopy(bookId)
+DB --> Reservation : copy held / reservation pending
+Reservation --> UI : reservation submitted
+
+UI -> Librarian : notify reservation request
+Librarian --> UI : approve request
+
+UI -> Loan : issueBook(reservationId)
+Loan -> DB : markCopyAsIssued(copyId)
+DB --> Loan : status updated = Issued
+Loan --> UI : loan created with due date
+
+UI --> Student : issue confirmation and due date
+
+== Book Return, Overdue Check, and Report Flow ==
+
+Student -> Librarian : Return borrowed book
+Librarian -> UI : Scan barcode / select loan
+UI -> Loan : getLoanDetails(copyId)
+Loan --> UI : active loan and due date
+
+Librarian -> UI : confirm return
+UI -> Loan : returnBook(loanId, returnDate)
+Loan -> DB : markCopyAsAvailable(copyId)
+DB --> Loan : status updated = Available
+Loan --> UI : return processed / fine status
+
+UI --> Student : return confirmation
+
+Librarian -> UI : request overdue report
+UI -> Report : generateOverdueReport()
+Report -> Loan : fetchActiveOverdueLoans()
+Loan --> Report : overdue loan list
+Report --> UI : compiled overdue report
+
+UI --> Librarian : display / export report
+@enduml

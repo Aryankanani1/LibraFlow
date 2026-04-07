@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Overdue Books — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Overdue Books</h2>
+  <a href="{{ url_for('admin.reports', type='overdue') }}" class="btn btn-outline">Generate Report</a>
+</div>
+
+{% if overdue_loans %}
+<div class="alert alert-danger">
+  <strong>{{ overdue_loans|length }}</strong> book(s) are currently overdue.
+</div>
+<div class="card">
+  <div class="card-body">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Book</th>
+          <th>Due Date</th>
+          <th>Days Overdue</th>
+          <th>Fine ($1/day)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in overdue_loans %}
+        {% set days_overdue = ((now - loan.due_date).days) if now else 0 %}
+        <tr>
+          <td>
+            {{ loan.student.name }}<br>
+            <small class="text-muted">{{ loan.student.email }}</small>
+          </td>
+          <td>
+            {{ loan.copy.book.title }}<br>
+            <small class="text-muted">{{ loan.copy.copy_code }}</small>
+          </td>
+          <td class="text-red">{{ loan.due_date.strftime('%b %d, %Y') }}</td>
+          <td class="text-red">{{ loan.fine_amount()|int }} day(s)</td>
+          <td class="text-red"><strong>${{ "%.2f"|format(loan.fine_amount()) }}</strong></td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.return_book', loan_id=loan.id) }}">
+              <button type="submit" class="btn btn-sm btn-primary">Mark Returned</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+  <div class="empty-state">
+    <p>No overdue books. All loans are on time!</p>
+  </div>
+{% endif %}
+{% endblock %}

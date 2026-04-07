@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LibraFlow{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('auth.index') }}">
+    <span class="brand-icon">📚</span> LibraFlow
+  </a>
+  <div class="navbar-links">
+    {% if current_user.is_student() %}
+      <a href="{{ url_for('student.dashboard') }}" class="nav-link">Dashboard</a>
+      <a href="{{ url_for('student.search') }}" class="nav-link">Search Books</a>
+      <a href="{{ url_for('student.history') }}" class="nav-link">My History</a>
+      <a href="{{ url_for('student.reservations') }}" class="nav-link">My Reservations</a>
+    {% else %}
+      <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a>
+      <a href="{{ url_for('admin.books') }}" class="nav-link">Books</a>
+      <a href="{{ url_for('admin.loans') }}" class="nav-link">Loans</a>
+      <a href="{{ url_for('admin.reservations') }}" class="nav-link">Reservations</a>
+      <a href="{{ url_for('admin.overdue') }}" class="nav-link">Overdue</a>
+      <a href="{{ url_for('admin.scan_barcode') }}" class="nav-link">Scan</a>
+      <a href="{{ url_for('admin.reports') }}" class="nav-link">Reports</a>
+    {% endif %}
+  </div>
+  <div class="navbar-user">
+    <span class="user-badge {% if current_user.is_librarian() %}badge-admin{% else %}badge-student{% endif %}">
+      {{ 'Admin' if current_user.is_librarian() else 'Student' }}
+    </span>
+    <span class="user-name">{{ current_user.name }}</span>
+    <a href="{{ url_for('auth.logout') }}" class="nav-link logout-link">Logout</a>
+  </div>
+</nav>
+{% endif %}
+
+<main class="main-content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

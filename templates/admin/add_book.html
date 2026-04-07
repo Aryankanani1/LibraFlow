@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Add Book — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Add Book</h2>
+  <a href="{{ url_for('admin.books') }}" class="btn btn-outline">← Back</a>
+</div>
+
+<div class="card" style="max-width:600px">
+  <div class="card-body">
+    <form method="POST">
+      <div class="form-group">
+        <label>ISBN *</label>
+        <input type="text" name="isbn" class="form-input" required placeholder="e.g. 978-0-13-468599-1">
+      </div>
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" name="title" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label>Author *</label>
+        <input type="text" name="author" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label>Category *</label>
+        <input type="text" name="category" class="form-input" required placeholder="e.g. Programming, Algorithms">
+      </div>
+      <div class="form-group">
+        <label>Publisher</label>
+        <input type="text" name="publisher" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Shelf Location</label>
+        <input type="text" name="shelf_location" class="form-input" placeholder="e.g. A1, B3">
+      </div>
+      <div class="form-group">
+        <label>Number of Copies</label>
+        <input type="number" name="num_copies" class="form-input" value="1" min="1" max="50">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add Book</button>
+        <a href="{{ url_for('admin.books') }}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

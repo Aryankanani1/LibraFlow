@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Reservations — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Reservation Requests</h2>
+</div>
+
+<div class="filter-tabs">
+  <a href="{{ url_for('admin.reservations', status='pending') }}"
+     class="filter-tab {% if status == 'pending' %}active{% endif %}">Pending</a>
+  <a href="{{ url_for('admin.reservations', status='approved') }}"
+     class="filter-tab {% if status == 'approved' %}active{% endif %}">Approved</a>
+  <a href="{{ url_for('admin.reservations', status='all') }}"
+     class="filter-tab {% if status == 'all' %}active{% endif %}">All</a>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    {% if reservations %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Book</th>
+          <th>Copy</th>
+          <th>Requested On</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for res in reservations %}
+        <tr>
+          <td>
+            {{ res.student.name }}<br>
+            <small class="text-muted">{{ res.student.email }}</small>
+          </td>
+          <td>{{ res.copy.book.title }}</td>
+          <td><small>{{ res.copy.copy_code }}</small></td>
+          <td>{{ res.request_date.strftime('%b %d, %Y %H:%M') }}</td>
+          <td>
+            {% if res.status == 'pending' %}
+              <span class="badge badge-warning">Pending</span>
+            {% elif res.status == 'approved' %}
+              <span class="badge badge-success">Approved</span>
+            {% elif res.status == 'fulfilled' %}
+              <span class="badge badge-blue">Fulfilled</span>
+            {% elif res.status == 'cancelled' %}
+              <span class="badge badge-secondary">Cancelled</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if res.status == 'pending' %}
+              <form method="POST" action="{{ url_for('admin.approve_reservation', reservation_id=res.id) }}" style="display:inline">
+                <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.reject_reservation', reservation_id=res.id) }}" style="display:inline">
+                <button type="submit" class="btn btn-sm btn-danger"
+                        onclick="return confirm('Reject this reservation?')">Reject</button>
+              </form>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">
+        <p>No reservations found.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

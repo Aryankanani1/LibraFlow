@@ -1,0 +1,58 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam actorStyle awesome
+
+actor "Student/User" as Student
+actor "Admin/Librarian" as Admin
+
+rectangle "Library Management System - Student" {
+    usecase "Login" as UC1
+    usecase "Search Books" as UC2
+    usecase "View Borrowing History" as UC3
+    usecase "View User Dashboard" as UC4
+    usecase "Borrow/Issue Book" as UC5
+    usecase "Return Book" as UC6
+    usecase "Check Book Availability" as UC7
+    usecase "Reserve Book" as UC8
+}
+
+rectangle "Library Management System - Admin" {
+    usecase "Login" as AC1
+    usecase "Add Books" as AC2
+    usecase "Manage Books" as AC3
+    usecase "Track Overdue Books" as AC4
+    usecase "Generate Reports" as AC5
+    usecase "Manage Admin Panel" as AC6
+    usecase "Scan Barcode" as AC7
+    usecase "Issue Book" as AC8
+    usecase "Accept Returned Book" as AC9
+    usecase "Approve Requests" as AC10
+}
+
+Student --> UC1
+Student --> UC2
+Student --> UC3
+Student --> UC4
+Student --> UC5
+Student --> UC6
+Student --> UC8
+
+UC5 ..> UC7 : <<include>>
+UC8 ..> UC7 : <<include>>
+
+Admin --> AC1
+Admin --> AC2
+Admin --> AC3
+Admin --> AC4
+Admin --> AC5
+Admin --> AC6
+Admin --> AC7
+Admin --> AC8
+Admin --> AC9
+Admin --> AC10
+
+AC7 ..> AC8 : <<extend>>
+AC7 ..> AC9 : <<extend>>
+@enduml

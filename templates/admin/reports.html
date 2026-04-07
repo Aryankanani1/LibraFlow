@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}Reports — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Reports</h2>
+</div>
+
+<div class="filter-tabs">
+  <a href="{{ url_for('admin.reports', type='overdue') }}"
+     class="filter-tab {% if report_type == 'overdue' %}active{% endif %}">Overdue Report</a>
+  <a href="{{ url_for('admin.reports', type='inventory') }}"
+     class="filter-tab {% if report_type == 'inventory' %}active{% endif %}">Inventory Report</a>
+  <a href="{{ url_for('admin.reports', type='activity') }}"
+     class="filter-tab {% if report_type == 'activity' %}active{% endif %}">Activity Report</a>
+</div>
+
+<!-- Overdue Report -->
+{% if report_type == 'overdue' %}
+<div class="card">
+  <div class="card-header">
+    <h3>Overdue Books Report</h3>
+    <span class="text-muted">Generated: {{ now.strftime('%b %d, %Y %H:%M') if now else '' }}</span>
+  </div>
+  <div class="card-body">
+    {% if data.loans %}
+    <table class="table">
+      <thead>
+        <tr><th>Student</th><th>Book</th><th>Due Date</th><th>Fine</th></tr>
+      </thead>
+      <tbody>
+        {% for loan in data.loans %}
+        <tr>
+          <td>{{ loan.student.name }} ({{ loan.student.email }})</td>
+          <td>{{ loan.copy.book.title }}</td>
+          <td class="text-red">{{ loan.due_date.strftime('%b %d, %Y') }}</td>
+          <td class="text-red">${{ "%.2f"|format(loan.fine_amount()) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="mt-2"><strong>Total overdue: {{ data.loans|length }}</strong></p>
+    {% else %}
+      <p class="text-muted text-center">No overdue books.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Inventory Report -->
+{% elif report_type == 'inventory' %}
+<div class="card">
+  <div class="card-header">
+    <h3>Inventory Report</h3>
+  </div>
+  <div class="card-body">
+    {% if data.books %}
+    <table class="table">
+      <thead>
+        <tr><th>Title</th><th>Author</th><th>Category</th><th>ISBN</th><th>Total Copies</th><th>Available</th></tr>
+      </thead>
+      <tbody>
+        {% for book in data.books %}
+        <tr>
+          <td>{{ book.title }}</td>
+          <td>{{ book.author }}</td>
+          <td>{{ book.category }}</td>
+          <td><small>{{ book.isbn }}</small></td>
+          <td>{{ book.copies.count() }}</td>
+          <td class="{% if book.available_copies_count() > 0 %}text-green{% else %}text-red{% endif %}">
+            {{ book.available_copies_count() }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="mt-2"><strong>Total titles: {{ data.books|length }}</strong></p>
+    {% else %}
+      <p class="text-muted text-center">No books in catalog.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Activity Report -->
+{% elif report_type == 'activity' %}
+<div class="card mb-4">
+  <div class="card-header"><h3>Recent Loans (Last 50)</h3></div>
+  <div class="card-body">
+    {% if data.recent_loans %}
+    <table class="table">
+      <thead>
+        <tr><th>Student</th><th>Book</th><th>Issue Date</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for loan in data.recent_loans %}
+        <tr>
+          <td>{{ loan.student.name }}</td>
+          <td>{{ loan.copy.book.title }}</td>
+          <td>{{ loan.issue_date.strftime('%b %d, %Y') }}</td>
+          <td>
+            {% if loan.status == 'returned' %}
+              <span class="badge badge-success">Returned</span>
+            {% elif loan.is_overdue() %}
+              <span class="badge badge-danger">Overdue</span>
+            {% else %}
+              <span class="badge badge-blue">Active</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-muted text-center">No loan activity yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3>Recent Reservations (Last 20)</h3></div>
+  <div class="card-body">
+    {% if data.recent_reservations %}
+    <table class="table">
+      <thead>
+        <tr><th>Student</th><th>Book</th><th>Date</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for res in data.recent_reservations %}
+        <tr>
+          <td>{{ res.student.name }}</td>
+          <td>{{ res.copy.book.title }}</td>
+          <td>{{ res.request_date.strftime('%b %d, %Y') }}</td>
+          <td><span class="badge badge-warning">{{ res.status|capitalize }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-muted text-center">No reservation activity yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Report History -->
+{% if past_reports %}
+<div class="card mt-4">
+  <div class="card-header"><h3>Report History</h3></div>
+  <div class="card-body">
+    <table class="table">
+      <thead>
+        <tr><th>Type</th><th>Generated On</th><th>By</th></tr>
+      </thead>
+      <tbody>
+        {% for r in past_reports %}
+        <tr>
+          <td>{{ r.report_type|capitalize }}</td>
+          <td>{{ r.generated_on.strftime('%b %d, %Y %H:%M') }}</td>
+          <td>{{ r.librarian.name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

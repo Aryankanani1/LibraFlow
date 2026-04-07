@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Borrowing History — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Borrowing History</h2>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    {% if loans %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Book</th>
+            <th>ISBN</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+            <th>Fine</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in loans %}
+          <tr>
+            <td>
+              <strong>{{ loan.copy.book.title }}</strong><br>
+              <small class="text-muted">{{ loan.copy.book.author }}</small>
+            </td>
+            <td><small>{{ loan.copy.book.isbn }}</small></td>
+            <td>{{ loan.issue_date.strftime('%b %d, %Y') }}</td>
+            <td>{{ loan.due_date.strftime('%b %d, %Y') }}</td>
+            <td>
+              {% if loan.return_date %}
+                {{ loan.return_date.strftime('%b %d, %Y') }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if loan.status == 'returned' %}
+                <span class="badge badge-success">Returned</span>
+              {% elif loan.is_overdue() %}
+                <span class="badge badge-danger">Overdue</span>
+              {% else %}
+                <span class="badge badge-blue">Active</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if loan.fine_amount() > 0 %}
+                <span class="text-red">${{ "%.2f"|format(loan.fine_amount()) }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">
+        <p>No borrowing history yet.</p>
+        <a href="{{ url_for('student.search') }}" class="btn btn-primary">Search Books</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

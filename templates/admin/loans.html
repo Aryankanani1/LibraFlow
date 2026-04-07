@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Loans — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Loan Management</h2>
+  <a href="{{ url_for('admin.issue_book') }}" class="btn btn-primary">Issue Book</a>
+</div>
+
+<div class="filter-tabs">
+  <a href="{{ url_for('admin.loans', status='all') }}"
+     class="filter-tab {% if status == 'all' %}active{% endif %}">All</a>
+  <a href="{{ url_for('admin.loans', status='active') }}"
+     class="filter-tab {% if status == 'active' %}active{% endif %}">Active</a>
+  <a href="{{ url_for('admin.loans', status='overdue') }}"
+     class="filter-tab {% if status == 'overdue' %}active{% endif %}">Overdue</a>
+  <a href="{{ url_for('admin.loans', status='returned') }}"
+     class="filter-tab {% if status == 'returned' %}active{% endif %}">Returned</a>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    {% if loans %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Book</th>
+          <th>Copy</th>
+          <th>Issue Date</th>
+          <th>Due Date</th>
+          <th>Return Date</th>
+          <th>Status</th>
+          <th>Fine</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in loans %}
+        <tr>
+          <td>
+            {{ loan.student.name }}<br>
+            <small class="text-muted">{{ loan.student.email }}</small>
+          </td>
+          <td>{{ loan.copy.book.title }}</td>
+          <td><small>{{ loan.copy.copy_code }}</small></td>
+          <td>{{ loan.issue_date.strftime('%b %d, %Y') }}</td>
+          <td class="{% if loan.is_overdue() %}text-red{% endif %}">
+            {{ loan.due_date.strftime('%b %d, %Y') }}
+          </td>
+          <td>
+            {{ loan.return_date.strftime('%b %d, %Y') if loan.return_date else '—' }}
+          </td>
+          <td>
+            {% if loan.status == 'returned' %}
+              <span class="badge badge-success">Returned</span>
+            {% elif loan.is_overdue() %}
+              <span class="badge badge-danger">Overdue</span>
+            {% else %}
+              <span class="badge badge-blue">Active</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if loan.fine_amount() > 0 %}
+              <span class="text-red">${{ "%.2f"|format(loan.fine_amount()) }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% if loan.status == 'active' %}
+              <form method="POST" action="{{ url_for('admin.return_book', loan_id=loan.id) }}">
+                <button type="submit" class="btn btn-sm btn-primary">Return</button>
+              </form>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">
+        <p>No loans found.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Welcome back, {{ current_user.name }}</h2>
+  <p class="text-muted">Student ID: {{ current_user.student_id or 'N/A' }}</p>
+</div>
+
+{% if overdue %}
+<div class="alert alert-danger">
+  <strong>Overdue Alert:</strong> You have {{ overdue|length }} overdue book(s). Please return them to avoid additional fines.
+</div>
+{% endif %}
+
+<div class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-number">{{ active_loans|length }}</div>
+    <div class="stat-label">Active Loans</div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-number">{{ overdue|length }}</div>
+    <div class="stat-label">Overdue</div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-number">{{ pending_reservations|length }}</div>
+    <div class="stat-label">Pending Reservations</div>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+  <!-- Active Loans -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Active Loans</h3>
+      <a href="{{ url_for('student.history') }}" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    <div class="card-body">
+      {% if active_loans %}
+        <table class="table">
+          <thead>
+            <tr><th>Book</th><th>Due Date</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for loan in active_loans %}
+            <tr>
+              <td>
+                <strong>{{ loan.copy.book.title }}</strong><br>
+                <small class="text-muted">{{ loan.copy.book.author }}</small>
+              </td>
+              <td>{{ loan.due_date.strftime('%b %d, %Y') }}</td>
+              <td>
+                {% if loan.is_overdue() %}
+                  <span class="badge badge-danger">Overdue (${{ "%.2f"|format(loan.fine_amount()) }})</span>
+                {% else %}
+                  <span class="badge badge-success">Active</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="text-muted text-center">No active loans.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Pending Reservations -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Pending Reservations</h3>
+      <a href="{{ url_for('student.reservations') }}" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    <div class="card-body">
+      {% if pending_reservations %}
+        <table class="table">
+          <thead>
+            <tr><th>Book</th><th>Requested</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for res in pending_reservations %}
+            <tr>
+              <td>
+                <strong>{{ res.copy.book.title }}</strong><br>
+                <small class="text-muted">{{ res.copy.book.author }}</small>
+              </td>
+              <td>{{ res.request_date.strftime('%b %d, %Y') }}</td>
+              <td><span class="badge badge-warning">{{ res.status|capitalize }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="text-muted text-center">No pending reservations.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mt-4">
+  <div class="card-header"><h3>Quick Actions</h3></div>
+  <div class="card-body">
+    <div class="action-buttons">
+      <a href="{{ url_for('student.search') }}" class="btn btn-primary">Search Books</a>
+      <a href="{{ url_for('student.history') }}" class="btn btn-outline">Borrowing History</a>
+      <a href="{{ url_for('student.reservations') }}" class="btn btn-outline">My Reservations</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

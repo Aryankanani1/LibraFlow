@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Manage Books — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Book Catalog</h2>
+  <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">+ Add Book</a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="GET" class="search-form">
+      <div class="search-row">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search by title, author, or ISBN..." class="form-input search-input">
+        <button type="submit" class="btn btn-primary">Search</button>
+        {% if query %}<a href="{{ url_for('admin.books') }}" class="btn btn-outline">Clear</a>{% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    {% if books %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Author</th>
+          <th>ISBN</th>
+          <th>Category</th>
+          <th>Publisher</th>
+          <th>Copies</th>
+          <th>Available</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in books %}
+        <tr>
+          <td><strong>{{ book.title }}</strong></td>
+          <td>{{ book.author }}</td>
+          <td><small>{{ book.isbn }}</small></td>
+          <td><span class="badge badge-category">{{ book.category }}</span></td>
+          <td><small>{{ book.publisher }}</small></td>
+          <td>{{ book.copies.count() }}</td>
+          <td>
+            <span class="{% if book.available_copies_count() > 0 %}text-green{% else %}text-red{% endif %}">
+              {{ book.available_copies_count() }}
+            </span>
+          </td>
+          <td>
+            <a href="{{ url_for('admin.edit_book', book_id=book.id) }}" class="btn btn-sm btn-outline">Edit</a>
+            <form method="POST" action="{{ url_for('admin.delete_book', book_id=book.id) }}" style="display:inline">
+              <button type="submit" class="btn btn-sm btn-danger"
+                      onclick="return confirm('Delete this book and all its copies?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">
+        {% if query %}
+          <p>No books found for "{{ query }}".</p>
+        {% else %}
+          <p>No books in catalog yet.</p>
+          <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">Add First Book</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
