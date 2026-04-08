@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from models import db, Book, BookCopy, Loan, Reservation
+from models import db, Book, BookCopy, Loan, Reservation, Review
 from functools import wraps
 
 student_bp = Blueprint('student', __name__, url_prefix='/student')
@@ -111,3 +111,62 @@ def borrow(copy_id):
     db.session.commit()
     flash(f'Book issued! Due date: {due_date.strftime("%B %d, %Y")}', 'success')
     return redirect(url_for('student.dashboard'))
+
+
+@student_bp.route('/books/<int:book_id>/review', methods=['GET', 'POST'])
+@login_required
+@student_required
+def review_book(book_id):
+    book = Book.query.get_or_404(book_id)
+
+    # Only allow review if student has returned this book at least once
+    borrowed = Loan.query.join(BookCopy).filter(
+        BookCopy.book_id == book_id,
+        Loan.student_id == current_user.id,
+        Loan.status == 'returned'
+    ).first()
+    if not borrowed:
+        flash('You can only review books you have returned.', 'warning')
+        return redirect(url_for('student.search'))
+
+    existing = Review.query.filter_by(student_id=current_user.id, book_id=book_id).first()
+
+    if request.method == 'POST':
+        rating = int(request.form.get('rating', 0))
+        comment = request.form.get('comment', '').strip()
+        if rating < 1 or rating > 5:
+            flash('Please select a rating between 1 and 5.', 'danger')
+            return render_template('student/review.html', book=book, existing=existing)
+
+        if existing:
+            existing.rating = rating
+            existing.comment = comment
+            existing.created_at = datetime.now(timezone.utc)
+            flash('Your review has been updated.', 'success')
+        else:
+            review = Review(student_id=current_user.id, book_id=book_id,
+                            rating=rating, comment=comment)
+            db.session.add(review)
+            flash('Review submitted! Thank you.', 'success')
+
+        db.session.commit()
+        return redirect(url_for('student.history'))
+
+    return render_template('student/review.html', book=book, existing=existing)
+
+
+@student_bp.route('/books/<int:book_id>')
+@login_required
+@student_required
+def book_detail(book_id):
+    book = Book.query.get_or_404(book_id)
+    reviews = book.reviews.order_by(Review.created_at.desc()).all()
+    user_review = Review.query.filter_by(student_id=current_user.id, book_id=book_id).first()
+    borrowed = Loan.query.join(BookCopy).filter(
+        BookCopy.book_id == book_id,
+        Loan.student_id == current_user.id,
+        Loan.status == 'returned'
+    ).first()
+    return render_template('student/book_detail.html', book=book,
+                           reviews=reviews, user_review=user_review,
+                           can_review=bool(borrowed))

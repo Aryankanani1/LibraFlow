@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from models import db, User, Book, BookCopy, Loan, Reservation, Report
+from models import db, User, Book, BookCopy, Loan, Reservation, Report, Review
 from functools import wraps
 import urllib.request
 import urllib.parse
@@ -253,6 +253,24 @@ def reports():
     elif report_type == 'inventory':
         data['books'] = Book.query.order_by(Book.category, Book.title).all()
         report = current_user.generate_report('inventory')
+
+    elif report_type == 'top_rated':
+        all_books = Book.query.all()
+        rated_books = [(b, b.avg_rating(), b.review_count()) for b in all_books if b.avg_rating()]
+        data['books'] = sorted(rated_books, key=lambda x: (x[1], x[2]), reverse=True)
+        report = current_user.generate_report('top_rated')
+
+    elif report_type == 'most_borrowed':
+        from sqlalchemy import func
+        results = db.session.query(
+            Book, func.count(Loan.id).label('borrow_count')
+        ).join(BookCopy, Book.id == BookCopy.book_id)\
+         .join(Loan, BookCopy.id == Loan.copy_id)\
+         .group_by(Book.id)\
+         .order_by(func.count(Loan.id).desc())\
+         .limit(20).all()
+        data['books'] = results
+        report = current_user.generate_report('most_borrowed')
 
     elif report_type == 'activity':
         data['recent_loans'] = Loan.query.order_by(Loan.issue_date.desc()).limit(50).all()

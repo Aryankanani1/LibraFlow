@@ -8,11 +8,15 @@
 
 <div class="filter-tabs">
   <a href="{{ url_for('admin.reports', type='overdue') }}"
-     class="filter-tab {% if report_type == 'overdue' %}active{% endif %}">Overdue Report</a>
+     class="filter-tab {% if report_type == 'overdue' %}active{% endif %}">Overdue</a>
   <a href="{{ url_for('admin.reports', type='inventory') }}"
-     class="filter-tab {% if report_type == 'inventory' %}active{% endif %}">Inventory Report</a>
+     class="filter-tab {% if report_type == 'inventory' %}active{% endif %}">Inventory</a>
+  <a href="{{ url_for('admin.reports', type='most_borrowed') }}"
+     class="filter-tab {% if report_type == 'most_borrowed' %}active{% endif %}">Most Borrowed</a>
+  <a href="{{ url_for('admin.reports', type='top_rated') }}"
+     class="filter-tab {% if report_type == 'top_rated' %}active{% endif %}">Top Rated</a>
   <a href="{{ url_for('admin.reports', type='activity') }}"
-     class="filter-tab {% if report_type == 'activity' %}active{% endif %}">Activity Report</a>
+     class="filter-tab {% if report_type == 'activity' %}active{% endif %}">Activity</a>
 </div>
 
 <!-- Overdue Report -->
@@ -76,6 +80,66 @@
     <p class="mt-2"><strong>Total titles: {{ data.books|length }}</strong></p>
     {% else %}
       <p class="text-muted text-center">No books in catalog.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Most Borrowed Report -->
+{% elif report_type == 'most_borrowed' %}
+<div class="card">
+  <div class="card-header"><h3>Most Borrowed Books (Top 20)</h3></div>
+  <div class="card-body">
+    {% if data.books %}
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Title</th><th>Author</th><th>Category</th><th>Times Borrowed</th></tr>
+      </thead>
+      <tbody>
+        {% for book, count in data.books %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td><strong>{{ book.title }}</strong></td>
+          <td>{{ book.author }}</td>
+          <td><span class="badge badge-category">{{ book.category }}</span></td>
+          <td><strong>{{ count }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-muted text-center">No loan data yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Top Rated Report -->
+{% elif report_type == 'top_rated' %}
+<div class="card">
+  <div class="card-header"><h3>Highest Rated Books</h3></div>
+  <div class="card-body">
+    {% if data.books %}
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Title</th><th>Author</th><th>Category</th><th>Avg Rating</th><th>Reviews</th></tr>
+      </thead>
+      <tbody>
+        {% for book, avg, count in data.books %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td><strong>{{ book.title }}</strong></td>
+          <td>{{ book.author }}</td>
+          <td><span class="badge badge-category">{{ book.category }}</span></td>
+          <td>
+            <span style="color:#f59e0b">{{ '★' * avg|int }}{{ '☆' * (5 - avg|int) }}</span>
+            <strong>{{ avg }}</strong>
+          </td>
+          <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-muted text-center">No reviews submitted yet.</p>
     {% endif %}
   </div>
 </div>

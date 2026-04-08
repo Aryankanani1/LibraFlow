@@ -19,13 +19,16 @@
             <th>Return Date</th>
             <th>Status</th>
             <th>Fine</th>
+            <th>Review</th>
           </tr>
         </thead>
         <tbody>
           {% for loan in loans %}
           <tr>
             <td>
-              <strong>{{ loan.copy.book.title }}</strong><br>
+              <a href="{{ url_for('student.book_detail', book_id=loan.copy.book.id) }}">
+                <strong>{{ loan.copy.book.title }}</strong>
+              </a><br>
               <small class="text-muted">{{ loan.copy.book.author }}</small>
             </td>
             <td><small>{{ loan.copy.book.isbn }}</small></td>
@@ -50,6 +53,14 @@
             <td>
               {% if loan.fine_amount() > 0 %}
                 <span class="text-red">${{ "%.2f"|format(loan.fine_amount()) }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if loan.status == 'returned' %}
+                <a href="{{ url_for('student.review_book', book_id=loan.copy.book.id) }}"
+                   class="btn btn-sm btn-outline">★ Review</a>
               {% else %}
                 <span class="text-muted">—</span>
               {% endif %}

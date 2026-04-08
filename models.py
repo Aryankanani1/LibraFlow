@@ -140,6 +140,15 @@ class Book(db.Model):
     def available_copies_count(self):
         return self.copies.filter_by(status='available').count()
 
+    def avg_rating(self):
+        reviews = self.reviews.all()
+        if not reviews:
+            return None
+        return round(sum(r.rating for r in reviews) / len(reviews), 1)
+
+    def review_count(self):
+        return self.reviews.count()
+
 
 class BookCopy(db.Model):
     __tablename__ = 'book_copies'
@@ -207,6 +216,20 @@ class Loan(db.Model):
             delta = datetime.now(timezone.utc) - self.due_date.replace(tzinfo=timezone.utc)
             return max(0, delta.days) * 1.0  # $1 per day
         return 0.0
+
+
+class Review(db.Model):
+    __tablename__ = 'reviews'
+
+    id = db.Column(db.Integer, primary_key=True)
+    rating = db.Column(db.Integer, nullable=False)        # 1–5 stars
+    comment = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+
+    student = db.relationship('User', backref=db.backref('reviews', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('reviews', lazy='dynamic'))
 
 
 class Report(db.Model):

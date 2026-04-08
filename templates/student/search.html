@@ -47,6 +47,16 @@
         <span class="availability-count {% if book.available_copies_count() > 0 %}text-green{% else %}text-red{% endif %}">
           {{ book.available_copies_count() }} / {{ book.copies.count() }}
         </span>
+        {% if book.avg_rating() %}
+          <span style="margin-left:.75rem; color:#f59e0b">
+            {{ '★' * book.avg_rating()|int }}{{ '☆' * (5 - book.avg_rating()|int) }}
+          </span>
+          <small class="text-muted">{{ book.avg_rating() }} ({{ book.review_count() }})</small>
+        {% endif %}
+      </div>
+
+      <div style="margin-bottom:.5rem">
+        <a href="{{ url_for('student.book_detail', book_id=book.id) }}" class="btn btn-sm btn-outline">View Details & Reviews</a>
       </div>
 
       {% if book.available_copies_count() > 0 %}

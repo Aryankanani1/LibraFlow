@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}{{ book.title }} — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>{{ book.title }}</h2>
+  <a href="{{ url_for('student.search') }}" class="btn btn-outline">← Back to Search</a>
+</div>
+
+<div class="dashboard-grid">
+  <!-- Book Info -->
+  <div class="card">
+    <div class="card-body">
+      <div class="book-card-header" style="margin-bottom:1rem">
+        <div class="book-icon" style="font-size:3rem">📖</div>
+        <div>
+          <h3>{{ book.title }}</h3>
+          <p class="text-muted">by {{ book.author }}</p>
+          <span class="badge badge-category">{{ book.category }}</span>
+        </div>
+      </div>
+      <table class="table table-compact">
+        <tr><th>ISBN</th><td>{{ book.isbn }}</td></tr>
+        <tr><th>Publisher</th><td>{{ book.publisher or '—' }}</td></tr>
+        <tr><th>Available</th><td>{{ book.available_copies_count() }} / {{ book.copies.count() }} copies</td></tr>
+        <tr><th>Rating</th>
+          <td>
+            {% if book.avg_rating() %}
+              <span class="stars-display">{{ '★' * book.avg_rating()|int }}{{ '☆' * (5 - book.avg_rating()|int) }}</span>
+              <strong>{{ book.avg_rating() }}</strong>
+              <span class="text-muted">({{ book.review_count() }} review{{ 's' if book.review_count() != 1 }})</span>
+            {% else %}
+              <span class="text-muted">No ratings yet</span>
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+
+      {% if can_review %}
+        <div class="mt-3">
+          <a href="{{ url_for('student.review_book', book_id=book.id) }}" class="btn btn-primary">
+            {{ 'Edit Your Review' if user_review else '★ Write a Review' }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <div class="card">
+    <div class="card-header"><h3>Reviews ({{ book.review_count() }})</h3></div>
+    <div class="card-body">
+      {% if reviews %}
+        {% for review in reviews %}
+        <div class="review-item {% if review.student_id == current_user.id %}review-mine{% endif %}">
+          <div class="review-header">
+            <span class="review-author">{{ review.student.name }}</span>
+            <span class="review-stars">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</span>
+            <span class="text-muted review-date">{{ review.created_at.strftime('%b %d, %Y') }}</span>
+          </div>
+          {% if review.comment %}
+            <p class="review-comment">{{ review.comment }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted text-center">No reviews yet. Be the first to review!</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.stars-display { color:#f59e0b; font-size:1.1rem; }
+.review-item { padding:.85rem 0; border-bottom:1px solid var(--border); }
+.review-item:last-child { border-bottom:none; }
+.review-mine { background:#fefce8; margin:0 -1.25rem; padding:.85rem 1.25rem; }
+.review-header { display:flex; align-items:center; gap:.75rem; margin-bottom:.35rem; }
+.review-author { font-weight:600; }
+.review-stars { color:#f59e0b; font-size:1rem; }
+.review-date { font-size:12px; margin-left:auto; }
+.review-comment { color:var(--text); font-size:14px; line-height:1.6; }
+</style>
+{% endblock %}

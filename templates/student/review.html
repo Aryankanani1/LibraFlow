@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Review — {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>{{ 'Edit Your Review' if existing else 'Write a Review' }}</h2>
+  <a href="{{ url_for('student.history') }}" class="btn btn-outline">← Back</a>
+</div>
+
+<div class="card" style="max-width:580px">
+  <div class="card-header">
+    <div>
+      <strong>{{ book.title }}</strong>
+      <p class="text-muted" style="margin:0">by {{ book.author }}</p>
+    </div>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <div class="form-group">
+        <label>Your Rating *</label>
+        <div class="star-picker" id="starPicker">
+          {% for i in range(1, 6) %}
+            <span class="star {% if existing and existing.rating >= i %}filled{% endif %}"
+                  data-value="{{ i }}" onclick="setRating({{ i }})">★</span>
+          {% endfor %}
+        </div>
+        <input type="hidden" id="rating-input" name="rating"
+               value="{{ existing.rating if existing else '' }}" required>
+        <small class="text-muted" id="rating-label">
+          {% if existing %}{{ ['','Poor','Fair','Good','Very Good','Excellent'][existing.rating] }}{% else %}Click to rate{% endif %}
+        </small>
+      </div>
+      <div class="form-group">
+        <label>Your Review (optional)</label>
+        <textarea name="comment" class="form-input" rows="4"
+                  placeholder="What did you think about this book?">{{ existing.comment if existing else '' }}</textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          {{ 'Update Review' if existing else 'Submit Review' }}
+        </button>
+        <a href="{{ url_for('student.history') }}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.star-picker { display:flex; gap:.25rem; margin-bottom:.35rem; }
+.star { font-size:2rem; cursor:pointer; color:#d1d5db; transition:color .15s; user-select:none; }
+.star.filled, .star.hovered { color:#f59e0b; }
+</style>
+
+<script>
+const labels = ['','Poor','Fair','Good','Very Good','Excellent'];
+function setRating(val) {
+  document.getElementById('rating-input').value = val;
+  document.getElementById('rating-label').textContent = labels[val];
+  document.querySelectorAll('.star').forEach((s, i) => {
+    s.classList.toggle('filled', i < val);
+  });
+}
+document.querySelectorAll('.star').forEach((star, i) => {
+  star.addEventListener('mouseenter', () => {
+    document.querySelectorAll('.star').forEach((s, j) => s.classList.toggle('hovered', j <= i));
+  });
+  star.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.star').forEach(s => s.classList.remove('hovered'));
+  });
+});
+</script>
+{% endblock %}
