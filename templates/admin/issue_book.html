@@ -12,8 +12,13 @@
     <form method="POST">
       <div class="form-group">
         <label>Book Barcode *</label>
-        <input type="text" name="barcode" class="form-input" required autofocus
-               placeholder="Scan or enter barcode">
+        <div class="barcode-input-row">
+          <input type="text" name="barcode" id="barcode-input" class="form-input"
+                 required autofocus placeholder="Scan or type barcode...">
+          <button type="button" class="btn btn-outline scan-btn" onclick="openScanner('barcode-input', false)">
+            📷 Camera
+          </button>
+        </div>
       </div>
       <div class="form-group">
         <label>Student Email *</label>
@@ -31,4 +36,6 @@
     </form>
   </div>
 </div>
+
+{% include 'admin/_scanner_modal.html' %}
 {% endblock %}

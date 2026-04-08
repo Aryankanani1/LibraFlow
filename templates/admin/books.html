@@ -51,6 +51,7 @@
           </td>
           <td>
             <a href="{{ url_for('admin.edit_book', book_id=book.id) }}" class="btn btn-sm btn-outline">Edit</a>
+            <a href="{{ url_for('admin.print_barcodes', book_id=book.id) }}" class="btn btn-sm btn-outline" title="Print barcode labels">🖨</a>
             <form method="POST" action="{{ url_for('admin.delete_book', book_id=book.id) }}" style="display:inline">
               <button type="submit" class="btn btn-sm btn-danger"
                       onclick="return confirm('Delete this book and all its copies?')">Delete</button>

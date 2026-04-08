@@ -1,0 +1,119 @@
+<!-- Camera Barcode Scanner Modal — include in any admin page that needs scanning -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<div id="scanner-modal" class="scanner-modal" style="display:none">
+  <div class="scanner-inner">
+    <div class="scanner-header">
+      <h3>📷 Scan Barcode</h3>
+      <button class="scanner-close" onclick="closeScanner()">✕</button>
+    </div>
+    <div id="scanner-reader"></div>
+    <p class="text-muted text-center" style="margin-top:.75rem">
+      Point your camera at the barcode
+    </p>
+    <div id="scanner-status" class="scanner-status"></div>
+  </div>
+</div>
+
+<style>
+.barcode-input-row { display:flex; gap:.5rem; }
+.barcode-input-row .form-input { flex:1; }
+.scan-btn { white-space:nowrap; }
+
+.scanner-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scanner-inner {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.3);
+}
+.scanner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.scanner-header h3 { margin: 0; font-size: 1.1rem; }
+.scanner-close {
+  background: none; border: none; font-size: 1.25rem;
+  cursor: pointer; color: var(--muted); padding: .25rem .5rem;
+  border-radius: 4px;
+}
+.scanner-close:hover { background: var(--bg); }
+#scanner-reader { border-radius: 8px; overflow: hidden; }
+#scanner-reader video { border-radius: 8px; }
+.scanner-status {
+  text-align: center;
+  font-weight: 600;
+  margin-top: .5rem;
+  min-height: 1.5rem;
+}
+.scanner-detected { color: var(--success); }
+</style>
+
+<script>
+let html5QrCode = null;
+let _targetInputId = null;
+let _autoSubmit = false;
+
+function openScanner(inputId, autoSubmit) {
+  _targetInputId = inputId;
+  _autoSubmit = autoSubmit || false;
+  document.getElementById('scanner-modal').style.display = 'flex';
+  document.getElementById('scanner-status').textContent = '';
+
+  html5QrCode = new Html5Qrcode('scanner-reader');
+  Html5Qrcode.getCameras().then(cameras => {
+    if (!cameras || cameras.length === 0) {
+      document.getElementById('scanner-status').textContent = 'No camera found.';
+      return;
+    }
+    // Prefer rear camera
+    const cam = cameras.find(c => /back|rear|environment/i.test(c.label)) || cameras[cameras.length - 1];
+    html5QrCode.start(
+      cam.id,
+      { fps: 10, qrbox: { width: 280, height: 140 } },
+      (decodedText) => {
+        document.getElementById(_targetInputId).value = decodedText;
+        document.getElementById('scanner-status').innerHTML =
+          `<span class="scanner-detected">✓ Detected: ${decodedText}</span>`;
+        setTimeout(() => {
+          closeScanner();
+          if (_autoSubmit) {
+            document.getElementById(_targetInputId).closest('form').submit();
+          }
+        }, 600);
+      },
+      () => {} // ignore per-frame errors
+    ).catch(err => {
+      document.getElementById('scanner-status').textContent = 'Camera error: ' + err;
+    });
+  }).catch(() => {
+    document.getElementById('scanner-status').textContent = 'Could not access cameras.';
+  });
+}
+
+function closeScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().catch(() => {}).finally(() => {
+      html5QrCode.clear();
+      html5QrCode = null;
+    });
+  }
+  document.getElementById('scanner-modal').style.display = 'none';
+}
+
+// Close on backdrop click
+document.getElementById('scanner-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeScanner();
+});
+</script>

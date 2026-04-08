@@ -328,6 +328,17 @@ def scan_barcode():
     return render_template('admin/scan.html', result=result)
 
 
+# ── Print Barcodes ───────────────────────────────────────────────────────────
+
+@admin_bp.route('/books/<int:book_id>/print-barcodes')
+@login_required
+@librarian_required
+def print_barcodes(book_id):
+    book = Book.query.get_or_404(book_id)
+    copies = book.copies.all()
+    return render_template('admin/print_barcodes.html', book=book, copies=copies)
+
+
 # ── Google Books API ──────────────────────────────────────────────────────────
 
 @admin_bp.route('/api/google-books')

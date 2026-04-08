@@ -6,13 +6,18 @@
   <h2>Scan Barcode</h2>
 </div>
 
-<div class="card" style="max-width:500px">
+<div class="card" style="max-width:520px">
   <div class="card-body">
-    <form method="POST">
+    <form method="POST" id="scan-form">
       <div class="form-group">
-        <label>Enter or Scan Barcode</label>
-        <input type="text" name="barcode" class="form-input" required autofocus
-               placeholder="Scan barcode or type it here">
+        <label>Barcode</label>
+        <div class="barcode-input-row">
+          <input type="text" name="barcode" id="barcode-input" class="form-input"
+                 required autofocus placeholder="Scan or type barcode...">
+          <button type="button" class="btn btn-outline scan-btn" onclick="openScanner('barcode-input', true)">
+            📷 Camera
+          </button>
+        </div>
       </div>
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">Look Up</button>
@@ -22,19 +27,21 @@
 </div>
 
 {% if result %}
-<div class="card mt-4" style="max-width:500px">
-  <div class="card-header"><h3>Scan Result</h3></div>
+<div class="card mt-4" style="max-width:520px">
+  <div class="card-header"><h3>Result</h3></div>
   <div class="card-body">
     {% if result.found %}
       <table class="table table-compact">
-        <tr><th>Title</th><td>{{ result.book.title }}</td></tr>
+        <tr><th>Title</th><td><strong>{{ result.book.title }}</strong></td></tr>
         <tr><th>Author</th><td>{{ result.book.author }}</td></tr>
         <tr><th>ISBN</th><td>{{ result.book.isbn }}</td></tr>
         <tr><th>Copy Code</th><td>{{ result.copy_code }}</td></tr>
-        <tr><th>Barcode</th><td>{{ result.barcode }}</td></tr>
+        <tr><th>Barcode</th><td><code>{{ result.barcode }}</code></td></tr>
         <tr><th>Status</th>
           <td>
-            <span class="badge {% if result.status == 'available' %}badge-success{% elif result.status == 'issued' %}badge-danger{% else %}badge-warning{% endif %}">
+            <span class="badge {% if result.status == 'available' %}badge-success
+              {% elif result.status == 'issued' %}badge-danger
+              {% else %}badge-warning{% endif %}">
               {{ result.status|capitalize }}
             </span>
           </td>
@@ -42,11 +49,11 @@
         <tr><th>Shelf</th><td>{{ result.shelf_location }}</td></tr>
       </table>
       <div class="form-actions mt-3">
-        {% if result.status == 'available' or result.status == 'reserved' %}
+        {% if result.status in ('available', 'reserved') %}
           <a href="{{ url_for('admin.issue_book') }}" class="btn btn-primary">Issue This Book</a>
-        {% elif result.status == 'issued' %}
-          <span class="text-muted">This copy is currently issued.</span>
         {% endif %}
+        <a href="{{ url_for('admin.print_barcodes', book_id=result.book.id) }}"
+           class="btn btn-outline">🖨 Print Labels</a>
       </div>
     {% else %}
       <div class="alert alert-danger">{{ result.message }}</div>
@@ -54,4 +61,7 @@
   </div>
 </div>
 {% endif %}
+
+<!-- Camera Scanner Modal -->
+{% include 'admin/_scanner_modal.html' %}
 {% endblock %}

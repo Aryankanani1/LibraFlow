@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Print Barcode Labels — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header no-print">
+  <h2>Barcode Labels — {{ book.title }}</h2>
+  <div style="display:flex;gap:.5rem">
+    <a href="{{ url_for('admin.books') }}" class="btn btn-outline no-print">← Back</a>
+    <button class="btn btn-primary no-print" onclick="window.print()">🖨 Print Labels</button>
+  </div>
+</div>
+
+<p class="text-muted no-print" style="margin-bottom:1.5rem">
+  {{ copies|length }} copy/copies found. Click <strong>Print Labels</strong> to print all.
+</p>
+
+<div class="labels-grid">
+  {% for copy in copies %}
+  <div class="label-card">
+    <div class="label-library">LibraFlow</div>
+    <div class="label-title">{{ book.title[:40] }}{% if book.title|length > 40 %}…{% endif %}</div>
+    <div class="label-author">{{ book.author }}</div>
+    <svg id="barcode-{{ copy.id }}" class="label-barcode"></svg>
+    <div class="label-meta">
+      <span>{{ copy.copy_code }}</span>
+      <span>{{ copy.shelf_location }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>
+  {% for copy in copies %}
+  try {
+    JsBarcode('#barcode-{{ copy.id }}', '{{ copy.barcode }}', {
+      format: 'CODE128',
+      width: 2,
+      height: 60,
+      displayValue: true,
+      fontSize: 11,
+      margin: 4,
+      background: '#ffffff',
+      lineColor: '#000000'
+    });
+  } catch(e) {}
+  {% endfor %}
+</script>
+
+<style>
+.labels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.label-card {
+  border: 1.5px dashed #94a3b8;
+  border-radius: 8px;
+  padding: .75rem;
+  text-align: center;
+  background: #fff;
+  page-break-inside: avoid;
+}
+.label-library { font-size: 10px; font-weight: 800; text-transform: uppercase;
+                  letter-spacing: 1px; color: var(--primary); margin-bottom: .25rem; }
+.label-title   { font-size: 12px; font-weight: 700; line-height: 1.3; margin-bottom: .15rem; }
+.label-author  { font-size: 10px; color: var(--muted); margin-bottom: .5rem; }
+.label-barcode { width: 100%; max-width: 200px; }
+.label-meta    { display:flex; justify-content:space-between;
+                  font-size: 10px; color: var(--muted); margin-top: .35rem; }
+
+@media print {
+  .no-print { display: none !important; }
+  .navbar    { display: none !important; }
+  .main-content { padding: 0; max-width: 100%; }
+  .labels-grid { grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+  .label-card { border: 1px dashed #999; }
+  body { background: white; }
+}
+</style>
+{% endblock %}
