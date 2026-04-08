@@ -6,6 +6,8 @@ from functools import wraps
 import urllib.request
 import urllib.parse
 import json
+import ssl
+import certifi
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -333,7 +335,8 @@ def google_books_lookup():
     })
 
     try:
-        with urllib.request.urlopen(url, timeout=5) as resp:
+        ctx = ssl.create_default_context(cafile=certifi.where())
+        with urllib.request.urlopen(url, timeout=5, context=ctx) as resp:
             raw = json.loads(resp.read().decode())
     except Exception:
         return jsonify([])
