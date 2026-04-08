@@ -3,6 +3,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from models import db, User, Book, BookCopy, Loan, Reservation, Report
 from functools import wraps
+import urllib.request
+import urllib.parse
+import json
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -303,3 +306,72 @@ def scan_barcode():
         else:
             result = {'found': False, 'message': 'Barcode not found'}
     return render_template('admin/scan.html', result=result)
+
+
+# ── Google Books API ──────────────────────────────────────────────────────────
+
+@admin_bp.route('/api/google-books')
+@login_required
+@librarian_required
+def google_books_lookup():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify([])
+
+    # If query looks like an ISBN (digits only or with dashes), search by isbn
+    clean = query.replace('-', '').replace(' ', '')
+    if clean.isdigit() and len(clean) in (10, 13):
+        search_query = f'isbn:{clean}'
+    else:
+        search_query = query
+
+    url = 'https://www.googleapis.com/books/v1/volumes?' + urllib.parse.urlencode({
+        'q': search_query,
+        'maxResults': 8,
+        'printType': 'books',
+        'langRestrict': 'en'
+    })
+
+    try:
+        with urllib.request.urlopen(url, timeout=5) as resp:
+            raw = json.loads(resp.read().decode())
+    except Exception:
+        return jsonify([])
+
+    results = []
+    for item in raw.get('items', []):
+        info = item.get('volumeInfo', {})
+
+        # Extract best ISBN
+        isbn = ''
+        for identifier in info.get('industryIdentifiers', []):
+            if identifier.get('type') == 'ISBN_13':
+                isbn = identifier.get('identifier', '')
+                break
+        if not isbn:
+            for identifier in info.get('industryIdentifiers', []):
+                if identifier.get('type') == 'ISBN_10':
+                    isbn = identifier.get('identifier', '')
+                    break
+
+        # Extract category
+        categories = info.get('categories', [])
+        category = categories[0].split('/')[0].strip() if categories else 'General'
+
+        # Thumbnail
+        image_links = info.get('imageLinks', {})
+        thumbnail = image_links.get('thumbnail', image_links.get('smallThumbnail', ''))
+        # Force HTTPS
+        if thumbnail:
+            thumbnail = thumbnail.replace('http://', 'https://')
+
+        results.append({
+            'title':     info.get('title', ''),
+            'authors':   ', '.join(info.get('authors', ['Unknown'])),
+            'publisher': info.get('publisher', ''),
+            'isbn':      isbn,
+            'category':  category,
+            'thumbnail': thumbnail,
+        })
+
+    return jsonify(results)

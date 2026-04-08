@@ -7,28 +7,46 @@
   <a href="{{ url_for('admin.books') }}" class="btn btn-outline">← Back</a>
 </div>
 
+<!-- Google Books Lookup -->
+<div class="card mb-4" style="max-width:600px">
+  <div class="card-header">
+    <h3>Auto-fill from Google Books</h3>
+    <span class="text-muted" style="font-size:12px">Search by ISBN or title</span>
+  </div>
+  <div class="card-body">
+    <div class="search-row">
+      <input type="text" id="gb-query" class="form-input search-input"
+             placeholder="Enter ISBN (e.g. 9780134685991) or book title...">
+      <button type="button" class="btn btn-primary" onclick="lookupBook()">Lookup</button>
+    </div>
+    <div id="gb-results" style="margin-top:1rem"></div>
+  </div>
+</div>
+
+<!-- Manual / Auto-filled Form -->
 <div class="card" style="max-width:600px">
+  <div class="card-header"><h3>Book Details</h3></div>
   <div class="card-body">
     <form method="POST">
       <div class="form-group">
         <label>ISBN *</label>
-        <input type="text" name="isbn" class="form-input" required placeholder="e.g. 978-0-13-468599-1">
+        <input type="text" id="f-isbn" name="isbn" class="form-input" required placeholder="e.g. 978-0-13-468599-1">
       </div>
       <div class="form-group">
         <label>Title *</label>
-        <input type="text" name="title" class="form-input" required>
+        <input type="text" id="f-title" name="title" class="form-input" required>
       </div>
       <div class="form-group">
         <label>Author *</label>
-        <input type="text" name="author" class="form-input" required>
+        <input type="text" id="f-author" name="author" class="form-input" required>
       </div>
       <div class="form-group">
         <label>Category *</label>
-        <input type="text" name="category" class="form-input" required placeholder="e.g. Programming, Algorithms">
+        <input type="text" id="f-category" name="category" class="form-input" required placeholder="e.g. Programming, Science">
       </div>
       <div class="form-group">
         <label>Publisher</label>
-        <input type="text" name="publisher" class="form-input">
+        <input type="text" id="f-publisher" name="publisher" class="form-input">
       </div>
       <div class="form-group">
         <label>Shelf Location</label>
@@ -45,4 +63,82 @@
     </form>
   </div>
 </div>
+
+<script>
+async function lookupBook() {
+  const query = document.getElementById('gb-query').value.trim();
+  if (!query) return;
+
+  const resultsDiv = document.getElementById('gb-results');
+  resultsDiv.innerHTML = '<p class="text-muted">Searching Google Books...</p>';
+
+  try {
+    const res = await fetch(`/admin/api/google-books?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+
+    if (!data.length) {
+      resultsDiv.innerHTML = '<p class="text-muted">No results found.</p>';
+      return;
+    }
+
+    let html = '<div class="gb-results-list">';
+    data.forEach((book, i) => {
+      html += `
+        <div class="gb-result-item" onclick="fillForm(${i})">
+          <div class="gb-result-inner">
+            ${book.thumbnail ? `<img src="${book.thumbnail}" class="gb-thumb" alt="cover">` : '<div class="gb-thumb-placeholder">📖</div>'}
+            <div class="gb-result-info">
+              <strong>${book.title}</strong><br>
+              <span class="text-muted">${book.authors}</span><br>
+              <small class="text-muted">${book.publisher || ''} ${book.isbn ? '· ISBN: ' + book.isbn : ''}</small>
+            </div>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+
+    // Store data for fillForm
+    window._gbData = data;
+    resultsDiv.innerHTML = html;
+  } catch(e) {
+    resultsDiv.innerHTML = '<p class="text-muted">Error fetching results. Check your connection.</p>';
+  }
+}
+
+function fillForm(index) {
+  const book = window._gbData[index];
+  document.getElementById('f-isbn').value      = book.isbn || '';
+  document.getElementById('f-title').value     = book.title || '';
+  document.getElementById('f-author').value    = book.authors || '';
+  document.getElementById('f-category').value  = book.category || '';
+  document.getElementById('f-publisher').value = book.publisher || '';
+
+  // Highlight the selected result
+  document.querySelectorAll('.gb-result-item').forEach((el, i) => {
+    el.classList.toggle('gb-result-selected', i === index);
+  });
+
+  // Scroll to form
+  document.querySelector('.card:last-of-type').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Allow pressing Enter in search box
+document.getElementById('gb-query').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); lookupBook(); }
+});
+</script>
+
+<style>
+.gb-results-list { display: flex; flex-direction: column; gap: .5rem; }
+.gb-result-item {
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  padding: .75rem; cursor: pointer; transition: all .15s;
+}
+.gb-result-item:hover { border-color: var(--primary); background: #f8f7ff; }
+.gb-result-selected { border-color: var(--primary); background: #ede9fe; }
+.gb-result-inner { display: flex; gap: .75rem; align-items: center; }
+.gb-thumb { width: 48px; height: 64px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.gb-thumb-placeholder { width: 48px; height: 64px; background: var(--bg); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+.gb-result-info { flex: 1; }
+</style>
 {% endblock %}
