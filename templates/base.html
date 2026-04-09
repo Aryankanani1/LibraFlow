@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}LibraFlow{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -13,30 +14,46 @@
   <a class="navbar-brand" href="{{ url_for('auth.index') }}">
     <span class="brand-icon">📚</span> LibraFlow
   </a>
-  <div class="navbar-links">
+
+  <div class="navbar-links" id="nav-links">
     {% if current_user.is_student() %}
-      <a href="{{ url_for('student.dashboard') }}" class="nav-link">Dashboard</a>
-      <a href="{{ url_for('student.search') }}" class="nav-link">Search Books</a>
-      <a href="{{ url_for('student.history') }}" class="nav-link">My History</a>
-      <a href="{{ url_for('student.reservations') }}" class="nav-link">My Reservations</a>
-      <a href="{{ url_for('student.map') }}" class="nav-link">Library Map</a>
+      <a href="{{ url_for('student.dashboard') }}"
+         class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}">Dashboard</a>
+      <a href="{{ url_for('student.search') }}"
+         class="nav-link {% if request.endpoint == 'student.search' %}active{% endif %}">Search Books</a>
+      <a href="{{ url_for('student.history') }}"
+         class="nav-link {% if request.endpoint == 'student.history' %}active{% endif %}">My History</a>
+      <a href="{{ url_for('student.reservations') }}"
+         class="nav-link {% if request.endpoint == 'student.reservations' %}active{% endif %}">My Reservations</a>
+      <a href="{{ url_for('student.map') }}"
+         class="nav-link {% if request.endpoint == 'student.map' %}active{% endif %}">Library Map</a>
     {% else %}
-      <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a>
-      <a href="{{ url_for('admin.books') }}" class="nav-link">Books</a>
-      <a href="{{ url_for('admin.loans') }}" class="nav-link">Loans</a>
-      <a href="{{ url_for('admin.reservations') }}" class="nav-link">Reservations</a>
-      <a href="{{ url_for('admin.overdue') }}" class="nav-link">Overdue</a>
-      <a href="{{ url_for('admin.scan_barcode') }}" class="nav-link">Scan</a>
-      <a href="{{ url_for('admin.reports') }}" class="nav-link">Reports</a>
+      <a href="{{ url_for('admin.dashboard') }}"
+         class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
+      <a href="{{ url_for('admin.books') }}"
+         class="nav-link {% if request.endpoint in ['admin.books','admin.add_book','admin.edit_book'] %}active{% endif %}">Books</a>
+      <a href="{{ url_for('admin.loans') }}"
+         class="nav-link {% if request.endpoint in ['admin.loans','admin.issue_book'] %}active{% endif %}">Loans</a>
+      <a href="{{ url_for('admin.reservations') }}"
+         class="nav-link {% if request.endpoint == 'admin.reservations' %}active{% endif %}">Reservations</a>
+      <a href="{{ url_for('admin.overdue') }}"
+         class="nav-link {% if request.endpoint == 'admin.overdue' %}active{% endif %}">Overdue</a>
+      <a href="{{ url_for('admin.scan_barcode') }}"
+         class="nav-link {% if request.endpoint == 'admin.scan_barcode' %}active{% endif %}">Scan</a>
+      <a href="{{ url_for('admin.reports') }}"
+         class="nav-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">Reports</a>
     {% endif %}
   </div>
+
   <div class="navbar-user">
     <span class="user-badge {% if current_user.is_librarian() %}badge-admin{% else %}badge-student{% endif %}">
       {{ 'Admin' if current_user.is_librarian() else 'Student' }}
     </span>
-    <span class="user-name">{{ current_user.name }}</span>
+    <span class="user-name">{{ current_user.name.split()[0] }}</span>
     <a href="{{ url_for('auth.logout') }}" class="nav-link logout-link">Logout</a>
   </div>
+
+  <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menu">☰</button>
 </nav>
 {% endif %}
 
@@ -45,7 +62,10 @@
     {% if messages %}
       <div class="flash-messages">
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
+          <div class="alert alert-{{ category }}">
+            {% if category == 'success' %}✓{% elif category == 'danger' %}✕{% elif category == 'warning' %}⚠{% else %}ℹ{% endif %}
+            {{ message }}
+          </div>
         {% endfor %}
       </div>
     {% endif %}
@@ -54,6 +74,18 @@
   {% block content %}{% endblock %}
 </main>
 
+{% if current_user.is_authenticated %}
+<footer class="site-footer">
+  <strong>LibraFlow</strong> — Library Management System &nbsp;·&nbsp;
+  Built by Jeel Chauhan, Arayan Khanani, Pavithra Parameswaran &amp; Krishna Akula
+</footer>
+{% endif %}
+
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+function toggleNav() {
+  document.getElementById('nav-links').classList.toggle('open');
+}
+</script>
 </body>
 </html>

@@ -2,9 +2,12 @@
 {% block title %}My Dashboard — LibraFlow{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h2>Welcome back, {{ current_user.name }}</h2>
-  <p class="text-muted">Student ID: {{ current_user.student_id or 'N/A' }}</p>
+<div class="welcome-banner">
+  <div>
+    <h2>Welcome back, {{ current_user.name.split()[0] }} 👋</h2>
+    <p>Student ID: {{ current_user.student_id or 'N/A' }} &nbsp;·&nbsp; {{ active_loans|length }} active loan{{ 's' if active_loans|length != 1 }}</p>
+  </div>
+  <div class="welcome-banner-icon">📚</div>
 </div>
 
 {% if overdue %}
@@ -15,16 +18,25 @@
 
 <div class="stats-grid">
   <div class="stat-card stat-blue">
-    <div class="stat-number">{{ active_loans|length }}</div>
-    <div class="stat-label">Active Loans</div>
+    <div class="stat-icon">📖</div>
+    <div class="stat-info">
+      <div class="stat-number">{{ active_loans|length }}</div>
+      <div class="stat-label">Active Loans</div>
+    </div>
   </div>
   <div class="stat-card stat-orange">
-    <div class="stat-number">{{ overdue|length }}</div>
-    <div class="stat-label">Overdue</div>
+    <div class="stat-icon">⏰</div>
+    <div class="stat-info">
+      <div class="stat-number">{{ overdue|length }}</div>
+      <div class="stat-label">Overdue</div>
+    </div>
   </div>
   <div class="stat-card stat-green">
-    <div class="stat-number">{{ pending_reservations|length }}</div>
-    <div class="stat-label">Pending Reservations</div>
+    <div class="stat-icon">🔖</div>
+    <div class="stat-info">
+      <div class="stat-number">{{ pending_reservations|length }}</div>
+      <div class="stat-label">Reservations</div>
+    </div>
   </div>
 </div>
 
