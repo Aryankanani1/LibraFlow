@@ -6,3 +6,7 @@ __pycache__/
 *.sqlite3
 .DS_Store
 *.zip
+*.pdf
+.env
+.claude/
+Library_Management_UML_Submission/
