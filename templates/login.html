@@ -1,54 +1,75 @@
 {% extends 'base.html' %}
 {% block title %}Sign In — LibraFlow{% endblock %}
-
 {% block flash_messages %}{% endblock %}
 
 {% block content %}
 <div class="auth-wrapper">
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="auth-flash">
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">
-            {% if category == 'success' %}<i data-lucide="check-circle"></i>
-            {% elif category == 'danger' %}<i data-lucide="x-circle"></i>
-            {% elif category == 'warning' %}<i data-lucide="alert-triangle"></i>
-            {% else %}<i data-lucide="info"></i>{% endif %}
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
-  <div class="auth-card">
-    <div class="auth-header">
-      <div class="auth-icon"><i data-lucide="library-big"></i></div>
-      <h1>LibraFlow</h1>
-      <p>Sign in to your account</p>
+  <!-- Left branding panel -->
+  <div class="auth-left">
+    <div class="auth-brand">
+      <i data-lucide="library-big"></i> LibraFlow
     </div>
-
-    <form method="POST" action="{{ url_for('auth.login') }}">
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" class="form-input"
-               placeholder="you@example.com" required autofocus>
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-input"
-               placeholder="••••••••" required>
-      </div>
-      <button type="submit" class="btn btn-primary btn-block" style="margin-top:.25rem">
-        Sign In
-      </button>
-    </form>
-
-    <div class="auth-footer">
-      Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a>
+    <div class="auth-tagline">
+      <h2>Your campus library, simplified.</h2>
+      <p>Search, borrow, and manage books — all from one place. Built for students and librarians.</p>
     </div>
+    <div class="auth-features">
+      <div class="auth-feature"><i data-lucide="search"></i> Search thousands of books instantly</div>
+      <div class="auth-feature"><i data-lucide="bookmark"></i> Reserve and borrow with one click</div>
+      <div class="auth-feature"><i data-lucide="map"></i> Find books on the library floor map</div>
+      <div class="auth-feature"><i data-lucide="star"></i> Read and write book reviews</div>
+    </div>
+    <div class="auth-left-footer">© 2026 LibraFlow. All rights reserved.</div>
   </div>
 
+  <!-- Right form panel -->
+  <div class="auth-right">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="auth-flash">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {% if category == 'success' %}<i data-lucide="check-circle"></i>
+              {% elif category == 'danger' %}<i data-lucide="x-circle"></i>
+              {% elif category == 'warning' %}<i data-lucide="alert-triangle"></i>
+              {% else %}<i data-lucide="info"></i>{% endif %}
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-icon"><i data-lucide="log-in"></i></div>
+        <h1>Welcome back</h1>
+        <p>Sign in to your LibraFlow account</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.login') }}">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" class="form-input"
+                 placeholder="you@example.com" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" class="form-input"
+                 placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:.25rem">
+          Sign In
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a>
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock %}

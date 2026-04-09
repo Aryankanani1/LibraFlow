@@ -32,7 +32,7 @@
     {% for book in books %}
     <div class="book-card">
       <div class="book-card-header">
-        <div class="book-icon">📖</div>
+        <div class="book-icon"><i data-lucide="book-open"></i></div>
         <div>
           <h4 class="book-title">{{ book.title }}</h4>
           <p class="book-author">by {{ book.author }}</p>
@@ -83,11 +83,15 @@
   </div>
 {% elif query %}
   <div class="empty-state">
-    <p>No books found for "{{ query }}".</p>
+    <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
+    <h4>No results found</h4>
+    <p>No books matched "{{ query }}". Try a different title, author, or category.</p>
   </div>
 {% else %}
   <div class="empty-state">
-    <p>Enter a search term above to find books.</p>
+    <div class="empty-state-icon"><i data-lucide="book-search"></i></div>
+    <h4>Search the catalog</h4>
+    <p>Enter a title, author, or category to find books.</p>
   </div>
 {% endif %}
 {% endblock %}

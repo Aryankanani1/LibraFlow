@@ -63,11 +63,14 @@
     </table>
     {% else %}
       <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="library"></i></div>
         {% if query %}
-          <p>No books found for "{{ query }}".</p>
+          <h4>No books found</h4>
+          <p>No books matched "{{ query }}".</p>
         {% else %}
-          <p>No books in catalog yet.</p>
-          <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">Add First Book</a>
+          <h4>Catalog is empty</h4>
+          <p>No books added yet. Start building your catalog.</p>
+          <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary"><i data-lucide="plus"></i> Add First Book</a>
         {% endif %}
       </div>
     {% endif %}
