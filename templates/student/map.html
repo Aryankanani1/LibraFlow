@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% block title %}Library Map — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Library Map</h2>
+  <p class="text-muted">Click any section to browse books</p>
+</div>
+
+<!-- Search to highlight a section -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="search-row">
+      <input type="text" id="map-search" class="form-input search-input"
+             placeholder="Search a book title to find its location on the map..."
+             value="{{ highlight_title or '' }}">
+      <button class="btn btn-primary" onclick="searchOnMap()">Find on Map</button>
+      {% if highlight_title %}
+        <a href="{{ url_for('student.map') }}" class="btn btn-outline">Clear</a>
+      {% endif %}
+    </div>
+    {% if highlight_msg %}
+      <p class="map-highlight-msg">{{ highlight_msg }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="map-wrapper">
+  <!-- Floor Plan -->
+  <div class="floor-plan">
+
+    <!-- Entrance -->
+    <div class="map-entrance">
+      <span>🚪 Entrance / Reception Desk</span>
+    </div>
+
+    <!-- Sections Grid -->
+    <div class="sections-grid">
+      {% for section in sections %}
+      <div class="map-section {{ 'map-section-highlighted' if section.category == highlight_category else '' }}"
+           data-category="{{ section.category }}"
+           onclick="selectSection('{{ section.category }}')">
+        <div class="section-icon">{{ section.icon }}</div>
+        <div class="section-name">{{ section.category }}</div>
+        <div class="section-shelf">{{ section.shelf_prefix }}</div>
+        <div class="section-count">{{ section.book_count }} book{{ 's' if section.book_count != 1 }}</div>
+        <div class="section-available {{ 'avail-green' if section.available > 0 else 'avail-red' }}">
+          {{ section.available }} available
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Legend -->
+    <div class="map-legend">
+      <div class="legend-item"><span class="legend-dot avail-green"></span> Available copies</div>
+      <div class="legend-item"><span class="legend-dot avail-red"></span> All copies out</div>
+      <div class="legend-item"><span class="legend-dot highlighted-dot"></span> Highlighted section</div>
+    </div>
+  </div>
+
+  <!-- Side Panel -->
+  <div class="map-panel" id="map-panel">
+    <div class="panel-placeholder">
+      <span style="font-size:3rem">🗺️</span>
+      <p>Click a section on the map<br>to see books in that area</p>
+    </div>
+    <div id="panel-content" style="display:none">
+      <div class="panel-header">
+        <h3 id="panel-title"></h3>
+        <span id="panel-shelf" class="text-muted"></span>
+      </div>
+      <div id="panel-books"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+.map-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Floor plan */
+.floor-plan {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+.map-entrance {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: #fff;
+  text-align: center;
+  padding: .75rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+  letter-spacing: .5px;
+}
+
+/* Sections grid */
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .75rem;
+}
+.map-section {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: .9rem .75rem;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+  user-select: none;
+}
+.map-section:hover {
+  border-color: var(--primary);
+  background: #f0f0ff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.map-section-highlighted {
+  border-color: var(--primary) !important;
+  background: #ede9fe !important;
+  box-shadow: 0 0 0 3px rgba(79,70,229,.2) !important;
+}
+.section-icon   { font-size: 1.6rem; margin-bottom: .3rem; }
+.section-name   { font-weight: 700; font-size: 12px; line-height: 1.3; margin-bottom: .2rem; }
+.section-shelf  { font-size: 11px; font-family: monospace; color: var(--muted); margin-bottom: .3rem; }
+.section-count  { font-size: 11px; color: var(--muted); }
+.section-available { font-size: 11px; font-weight: 600; margin-top: .2rem; }
+.avail-green { color: var(--success); }
+.avail-red   { color: var(--danger); }
+
+/* Legend */
+.map-legend {
+  display: flex; gap: 1.5rem; margin-top: 1.25rem;
+  padding-top: 1rem; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--muted);
+}
+.legend-item { display: flex; align-items: center; gap: .4rem; }
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.legend-dot.avail-green   { background: var(--success); }
+.legend-dot.avail-red     { background: var(--danger); }
+.legend-dot.highlighted-dot { background: var(--primary); }
+
+/* Side panel */
+.map-panel {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  min-height: 300px;
+  position: sticky;
+  top: 76px;
+}
+.panel-placeholder { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+.panel-placeholder p { margin-top: .75rem; line-height: 1.6; }
+.panel-header { margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--border); }
+.panel-header h3 { font-size: 1rem; font-weight: 700; }
+
+.book-list-item {
+  padding: .6rem 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+}
+.book-list-item:last-child { border-bottom: none; }
+.book-list-info { flex: 1; }
+.book-list-title { font-weight: 600; font-size: 13px; line-height: 1.3; }
+.book-list-author { font-size: 12px; color: var(--muted); }
+.book-list-shelf  { font-size: 11px; font-family: monospace; color: var(--muted); }
+
+/* Highlight message */
+.map-highlight-msg {
+  margin-top: .5rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+@media (max-width: 900px) {
+  .map-wrapper { grid-template-columns: 1fr; }
+  .sections-grid { grid-template-columns: repeat(2, 1fr); }
+  .map-panel { position: static; }
+}
+</style>
+
+<script>
+const booksByCategory = {{ books_json | safe }};
+const highlightCategory = "{{ highlight_category or '' }}";
+
+function selectSection(category) {
+  // Update active section styling
+  document.querySelectorAll('.map-section').forEach(el => {
+    el.classList.toggle('map-section-highlighted', el.dataset.category === category);
+  });
+
+  const books = booksByCategory[category] || [];
+  document.querySelector('.panel-placeholder').style.display = 'none';
+  document.getElementById('panel-content').style.display = 'block';
+  document.getElementById('panel-title').textContent = category;
+
+  const shelves = [...new Set(books.map(b => b.shelf))].filter(Boolean).join(', ');
+  document.getElementById('panel-shelf').textContent = shelves ? '📍 ' + shelves : '';
+
+  const container = document.getElementById('panel-books');
+  if (!books.length) {
+    container.innerHTML = '<p class="text-muted text-center" style="padding:1rem">No books in this section.</p>';
+    return;
+  }
+
+  container.innerHTML = books.map(b => `
+    <div class="book-list-item">
+      <div>
+        <span style="font-size:1.2rem">📖</span>
+      </div>
+      <div class="book-list-info">
+        <div class="book-list-title">${b.title}</div>
+        <div class="book-list-author">${b.author}</div>
+        <div class="book-list-shelf">${b.shelf} &nbsp;·&nbsp;
+          <span class="${b.available > 0 ? 'avail-green' : 'avail-red'}">
+            ${b.available}/${b.total} available
+          </span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function searchOnMap() {
+  const q = document.getElementById('map-search').value.trim();
+  if (q) window.location.href = '{{ url_for("student.map") }}?q=' + encodeURIComponent(q);
+}
+document.getElementById('map-search').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchOnMap();
+});
+
+// Auto-open highlighted section
+if (highlightCategory) {
+  selectSection(highlightCategory);
+}
+</script>
+{% endblock %}

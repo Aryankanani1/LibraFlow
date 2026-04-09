@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from models import db, Book, BookCopy, Loan, Reservation, Review
 from functools import wraps
+import json
 
 student_bp = Blueprint('student', __name__, url_prefix='/student')
 
@@ -170,3 +171,87 @@ def book_detail(book_id):
     return render_template('student/book_detail.html', book=book,
                            reviews=reviews, user_review=user_review,
                            can_review=bool(borrowed))
+
+
+@student_bp.route('/map')
+@login_required
+@student_required
+def map():
+    # Section metadata: icon, display name
+    SECTION_META = {
+        'Programming':        '💻',
+        'Web Development':    '🌐',
+        'Software Engineering':'⚙️',
+        'Algorithms':         '🔢',
+        'Machine Learning':   '🤖',
+        'Data Science':       '📊',
+        'Databases':          '🗄️',
+        'Computer Science':   '🖥️',
+        'Cybersecurity':      '🔒',
+        'DevOps':             '🚀',
+        'Operating Systems':  '🖱️',
+        'Networking':         '📡',
+        'Mathematics':        '📐',
+        'General':            '📚',
+        'Computers':          '💾',
+    }
+
+    all_books = Book.query.order_by(Book.category, Book.title).all()
+
+    # Build section data
+    section_map = {}
+    for book in all_books:
+        cat = book.category
+        if cat not in section_map:
+            section_map[cat] = {'books': [], 'available': 0, 'total_copies': 0}
+        copies = book.copies.all()
+        avail  = sum(1 for c in copies if c.is_available())
+        shelf  = copies[0].shelf_location if copies else ''
+        section_map[cat]['books'].append({
+            'id':        book.id,
+            'title':     book.title,
+            'author':    book.author,
+            'shelf':     shelf,
+            'available': avail,
+            'total':     len(copies),
+        })
+        section_map[cat]['available']    += avail
+        section_map[cat]['total_copies'] += len(copies)
+
+    sections = []
+    for cat, data in sorted(section_map.items()):
+        first_copy = BookCopy.query.join(Book).filter(Book.category == cat).first()
+        shelf_prefix = first_copy.shelf_location if first_copy else '—'
+        sections.append({
+            'category':    cat,
+            'icon':        SECTION_META.get(cat, '📚'),
+            'book_count':  len(data['books']),
+            'available':   data['available'],
+            'shelf_prefix': shelf_prefix,
+        })
+
+    books_json = json.dumps({cat: data['books'] for cat, data in section_map.items()})
+
+    # Handle search highlight
+    query = request.args.get('q', '').strip()
+    highlight_category = None
+    highlight_title = None
+    highlight_msg = None
+
+    if query:
+        book = Book.query.filter(Book.title.ilike(f'%{query}%')).first()
+        if book:
+            highlight_category = book.category
+            highlight_title = query
+            copy = book.copies.first()
+            shelf = copy.shelf_location if copy else '—'
+            highlight_msg = f'"{book.title}" is in the {book.category} section — Shelf {shelf}'
+        else:
+            highlight_msg = f'No book found matching "{query}"'
+
+    return render_template('student/map.html',
+                           sections=sections,
+                           books_json=books_json,
+                           highlight_category=highlight_category,
+                           highlight_title=highlight_title,
+                           highlight_msg=highlight_msg)

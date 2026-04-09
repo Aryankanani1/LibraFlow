@@ -55,8 +55,9 @@
         {% endif %}
       </div>
 
-      <div style="margin-bottom:.5rem">
-        <a href="{{ url_for('student.book_detail', book_id=book.id) }}" class="btn btn-sm btn-outline">View Details & Reviews</a>
+      <div style="margin-bottom:.5rem; display:flex; gap:.5rem; flex-wrap:wrap">
+        <a href="{{ url_for('student.book_detail', book_id=book.id) }}" class="btn btn-sm btn-outline">Details & Reviews</a>
+        <a href="{{ url_for('student.map') }}?q={{ book.title | urlencode }}" class="btn btn-sm btn-outline">📍 Find on Map</a>
       </div>
 
       {% if book.available_copies_count() > 0 %}
