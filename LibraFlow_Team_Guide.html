@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LibraFlow — Team Developer Guide</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;600;700;800&family=Roboto+Mono:wght@400;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      font-size: 13px;
+      color: #1e293b;
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    /* ── Cover Page ── */
+    .cover {
+      height: 100vh;
+      background: #111827;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
+      page-break-after: always;
+    }
+    .cover-logo {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: .5rem;
+    }
+    .cover-logo span { color: #6366f1; }
+    .cover-subtitle {
+      font-size: 16px;
+      color: #94a3b8;
+      margin-bottom: 3rem;
+      letter-spacing: 1px;
+    }
+    .cover-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: .75rem;
+    }
+    .cover-desc {
+      font-size: 14px;
+      color: #94a3b8;
+      max-width: 480px;
+      margin-bottom: 3rem;
+    }
+    .cover-meta {
+      font-size: 12px;
+      color: #64748b;
+      border-top: 1px solid #1e293b;
+      padding-top: 1.5rem;
+      width: 100%;
+      max-width: 480px;
+    }
+    .cover-meta p { margin-bottom: .25rem; }
+
+    /* ── Page Layout ── */
+    .page {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 3rem 2.5rem;
+    }
+
+    /* ── Section Headers ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: .75rem;
+      border-bottom: 2px solid #6366f1;
+      page-break-after: avoid;
+    }
+    .section-num {
+      background: #6366f1;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: .25rem .6rem;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: .5px;
+    }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 1.5rem 0 .5rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    p { margin-bottom: .75rem; color: #374151; }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    li { margin-bottom: .4rem; color: #374151; }
+
+    /* ── Code Block ── */
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11.5px;
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      margin: .75rem 0 1.25rem;
+      overflow-x: auto;
+      line-height: 1.7;
+      page-break-inside: avoid;
+    }
+    code {
+      font-family: 'Roboto Mono', monospace;
+      background: #f1f5f9;
+      color: #6366f1;
+      padding: .1rem .4rem;
+      border-radius: 3px;
+      font-size: 11.5px;
+    }
+
+    /* ── Info Boxes ── */
+    .box {
+      border-left: 4px solid #6366f1;
+      background: #f8fafc;
+      padding: .75rem 1rem;
+      margin: .75rem 0 1.25rem;
+      border-radius: 0 6px 6px 0;
+      page-break-inside: avoid;
+    }
+    .box.warning { border-color: #f59e0b; background: #fffbeb; }
+    .box.danger  { border-color: #ef4444; background: #fef2f2; }
+    .box.success { border-color: #16a34a; background: #f0fdf4; }
+    .box-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: .3rem;
+      color: #6366f1;
+    }
+    .box.warning .box-label { color: #b45309; }
+    .box.danger  .box-label { color: #dc2626; }
+    .box.success .box-label { color: #16a34a; }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: .75rem 0 1.25rem;
+      font-size: 12.5px;
+      page-break-inside: avoid;
+    }
+    th {
+      background: #111827;
+      color: #fff;
+      padding: .5rem .75rem;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    td {
+      padding: .5rem .75rem;
+      border-bottom: 1px solid #e2e8f0;
+      color: #374151;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .badge-primary { background: #eef2ff; color: #4f46e5; }
+    .badge-danger  { background: #fef2f2; color: #dc2626; }
+    .badge-success { background: #f0fdf4; color: #16a34a; }
+    .badge-warning { background: #fffbeb; color: #b45309; }
+
+    /* ── Workflow Steps ── */
+    .steps { counter-reset: step; margin: .75rem 0 1.25rem; }
+    .step {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: .75rem;
+      align-items: flex-start;
+      page-break-inside: avoid;
+    }
+    .step-num {
+      min-width: 28px;
+      height: 28px;
+      background: #6366f1;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-content { padding-top: 4px; }
+    .step-content strong { display: block; font-size: 13px; margin-bottom: .2rem; }
+
+    /* ── Divider ── */
+    hr {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 2rem 0;
+    }
+
+    /* ── Page Break ── */
+    .page-break { page-break-before: always; }
+
+    /* ── Print ── */
+    @media print {
+      .cover { height: 100vh; }
+      .page { padding: 2rem; }
+      pre { font-size: 10.5px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     COVER PAGE
+══════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">Libra<span>Flow</span></div>
+  <div class="cover-subtitle">Library Management System</div>
+  <div class="cover-title">Team Developer Guide</div>
+  <div class="cover-desc">
+    Setup instructions, Git workflow, coding standards, and team rules
+    for contributing to the LibraFlow project professionally.
+  </div>
+  <div class="cover-meta">
+    <p><strong>Repository:</strong> github.com/Aryankanani1/LibraFlow</p>
+    <p><strong>Stack:</strong> Python Flask · SQLite · HTML/CSS/JS</p>
+    <p><strong>Version:</strong> 1.0 &nbsp;|&nbsp; <strong>Date:</strong> April 2026</p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     TABLE OF CONTENTS
+══════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-title">Table of Contents</div>
+  </div>
+  <table>
+    <tr><td><strong>1</strong></td><td>Project Overview</td></tr>
+    <tr><td><strong>2</strong></td><td>Tech Stack</td></tr>
+    <tr><td><strong>3</strong></td><td>Setting Up Your Development Environment</td></tr>
+    <tr><td><strong>4</strong></td><td>Project Structure</td></tr>
+    <tr><td><strong>5</strong></td><td>Git Workflow — Branching Strategy</td></tr>
+    <tr><td><strong>6</strong></td><td>How to Make Changes (Step-by-Step)</td></tr>
+    <tr><td><strong>7</strong></td><td>Commit Message Rules</td></tr>
+    <tr><td><strong>8</strong></td><td>Pull Request Rules</td></tr>
+    <tr><td><strong>9</strong></td><td>Code Standards</td></tr>
+    <tr><td><strong>10</strong></td><td>Team Roles & Responsibilities</td></tr>
+    <tr><td><strong>11</strong></td><td>Rules & Regulations</td></tr>
+    <tr><td><strong>12</strong></td><td>Running Tests</td></tr>
+    <tr><td><strong>13</strong></td><td>Deployment Notes</td></tr>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 1 — PROJECT OVERVIEW
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-title">Project Overview</div>
+  </div>
+
+  <p>
+    <strong>LibraFlow</strong> is a full-stack Library Management System built for academic institutions.
+    It allows students to search, reserve, and borrow books, while librarians manage the full inventory,
+    loans, and reports through a dedicated admin panel.
+  </p>
+
+  <h3>Core Modules</h3>
+  <table>
+    <thead>
+      <tr><th>Module</th><th>Description</th><th>Users</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Authentication</td><td>Login, registration, role-based access</td><td>All</td></tr>
+      <tr><td>Book Management</td><td>CRUD for books, copies, barcodes, Open Library API</td><td>Admin</td></tr>
+      <tr><td>Loans & Reservations</td><td>Issue, return, reserve, approve/reject</td><td>Both</td></tr>
+      <tr><td>Reports & Analytics</td><td>Overdue, inventory, most borrowed, top rated</td><td>Admin</td></tr>
+      <tr><td>Reviews & Ratings</td><td>Students rate and review books (1–5 stars)</td><td>Student</td></tr>
+      <tr><td>Library Map</td><td>Interactive floor plan with book location search</td><td>Student</td></tr>
+      <tr><td>Barcode System</td><td>Camera scanning + printable barcode labels</td><td>Admin</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Default Accounts (Development Only)</h3>
+  <table>
+    <thead>
+      <tr><th>Role</th><th>Email</th><th>Password</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-danger">Admin</span></td>
+        <td>admin@libraflow.com</td>
+        <td>admin123</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-primary">Student</span></td>
+        <td>alice@university.edu</td>
+        <td>student123</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box warning">
+    <div class="box-label">Important</div>
+    These credentials are for development only. Never use them in a production environment.
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 2 — TECH STACK
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-title">Tech Stack</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Layer</th><th>Technology</th><th>Version</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Backend</td><td>Python Flask</td><td>3.1.0</td><td>Web framework, routing, blueprints</td></tr>
+      <tr><td>ORM</td><td>Flask-SQLAlchemy</td><td>3.1.1</td><td>Database models and queries</td></tr>
+      <tr><td>Database</td><td>SQLite</td><td>—</td><td>Local file-based database</td></tr>
+      <tr><td>Auth</td><td>Flask-Login</td><td>0.6.3</td><td>Session management, login/logout</td></tr>
+      <tr><td>Security</td><td>Werkzeug</td><td>3.1.3</td><td>Password hashing</td></tr>
+      <tr><td>Templates</td><td>Jinja2</td><td>Built-in</td><td>HTML templating engine</td></tr>
+      <tr><td>Icons</td><td>Lucide (CDN)</td><td>Latest</td><td>SVG icon set</td></tr>
+      <tr><td>Fonts</td><td>Roboto Condensed</td><td>Google Fonts</td><td>UI typography</td></tr>
+      <tr><td>Barcodes</td><td>JsBarcode (CDN)</td><td>3.11.6</td><td>Printable barcode labels</td></tr>
+      <tr><td>Scanner</td><td>html5-qrcode (CDN)</td><td>Latest</td><td>Camera barcode scanning</td></tr>
+      <tr><td>Book API</td><td>Open Library API</td><td>Free</td><td>Search books by title/ISBN</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 3 — SETUP
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-title">Setting Up Your Development Environment</div>
+  </div>
+
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Python 3.10 or higher installed</li>
+    <li>Git installed and configured with your GitHub account</li>
+    <li>A code editor (VS Code recommended)</li>
+    <li>Terminal / Command Prompt access</li>
+  </ul>
+
+  <h3>Step 1 — Clone the Repository</h3>
+<pre>git clone https://github.com/Aryankanani1/LibraFlow.git
+cd LibraFlow</pre>
+
+  <h3>Step 2 — Create a Virtual Environment</h3>
+<pre># macOS / Linux
+python3 -m venv venv
+source venv/bin/activate
+
+# Windows
+python -m venv venv
+venv\Scripts\activate</pre>
+
+  <div class="box">
+    <div class="box-label">Note</div>
+    You should always see <code>(venv)</code> at the start of your terminal prompt before running any commands.
+  </div>
+
+  <h3>Step 3 — Install Dependencies</h3>
+<pre>pip install -r requirements.txt</pre>
+
+  <h3>Step 4 — Initialize the Database</h3>
+<pre>python app.py</pre>
+  <p>This creates <code>libraflow.db</code> in the project root and seeds 2 demo users on first run.</p>
+
+  <h3>Step 5 — (Optional) Seed 63 Real Books</h3>
+<pre>python seed_books.py</pre>
+
+  <h3>Step 6 — Run the Application</h3>
+<pre>python app.py</pre>
+  <p>Open your browser and go to: <code>http://127.0.0.1:5000</code></p>
+
+  <div class="box success">
+    <div class="box-label">macOS SSL Fix (Python 3.13)</div>
+    If you get an SSL certificate error when searching for books, run:<br>
+    <code>/Applications/Python\ 3.13/Install\ Certificates.command</code>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 4 — PROJECT STRUCTURE
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-title">Project Structure</div>
+  </div>
+
+<pre>LibraFlow/
+├── app.py                  # App factory, blueprint registration, DB seed
+├── config.py               # App configuration (SECRET_KEY, DB URI)
+├── models.py               # SQLAlchemy models (User, Book, Loan, etc.)
+├── requirements.txt        # Python dependencies
+├── seed_books.py           # Script to seed 63 real books into DB
+├── libraflow.db            # SQLite database (auto-created, do NOT commit)
+│
+├── routes/
+│   ├── auth.py             # Login, logout, register
+│   ├── books.py            # Book search API endpoints
+│   ├── student.py          # Student dashboard, search, borrow, reserve, review
+│   └── admin.py            # Admin dashboard, books CRUD, loans, reports
+│
+├── static/
+│   └── css/
+│       └── style.css       # Global stylesheet (single source of truth for styles)
+│
+└── templates/
+    ├── base.html           # Base layout (navbar, footer, Lucide icons)
+    ├── login.html          # Login page
+    ├── register.html       # Registration page
+    ├── admin/
+    │   ├── dashboard.html
+    │   ├── books.html
+    │   ├── loans.html
+    │   ├── reports.html
+    │   ├── scan.html
+    │   ├── print_barcodes.html
+    │   ├── issue_book.html
+    │   └── _scanner_modal.html   # Reusable camera scanner component
+    └── student/
+        ├── dashboard.html
+        ├── search.html
+        ├── history.html
+        ├── reservations.html
+        ├── book_detail.html
+        ├── review.html
+        └── map.html</pre>
+
+  <h3>Key Files to Know</h3>
+  <table>
+    <thead>
+      <tr><th>File</th><th>What it does</th><th>Edit when...</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>models.py</code></td><td>All database tables</td><td>Adding/changing data fields</td></tr>
+      <tr><td><code>routes/admin.py</code></td><td>All admin functionality</td><td>Adding admin features</td></tr>
+      <tr><td><code>routes/student.py</code></td><td>All student functionality</td><td>Adding student features</td></tr>
+      <tr><td><code>static/css/style.css</code></td><td>All styles</td><td>Changing UI appearance</td></tr>
+      <tr><td><code>templates/base.html</code></td><td>Navbar, footer, layout</td><td>Changing global layout</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 5 — GIT WORKFLOW
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <div class="section-title">Git Workflow — Branching Strategy</div>
+  </div>
+
+  <p>We follow a <strong>feature branch workflow</strong>. The <code>main</code> branch is protected — nobody pushes directly to it.</p>
+
+  <h3>Branch Naming Convention</h3>
+  <table>
+    <thead>
+      <tr><th>Type</th><th>Pattern</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>New feature</td><td><code>feature/description</code></td><td><code>feature/export-reports</code></td></tr>
+      <tr><td>Bug fix</td><td><code>fix/description</code></td><td><code>fix/loan-due-date-bug</code></td></tr>
+      <tr><td>UI improvement</td><td><code>ui/description</code></td><td><code>ui/mobile-navbar</code></td></tr>
+      <tr><td>Tests</td><td><code>test/description</code></td><td><code>test/auth-routes</code></td></tr>
+      <tr><td>Documentation</td><td><code>docs/description</code></td><td><code>docs/api-endpoints</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Branch Rules</h3>
+  <ul>
+    <li><strong>main</strong> — production-ready code only. Protected. Requires PR + 1 approval to merge.</li>
+    <li><strong>feature/*</strong> — one feature per branch. Delete after merge.</li>
+    <li>Never commit directly to <code>main</code>.</li>
+    <li>Keep branches short-lived. Merge within a few days of starting.</li>
+    <li>Pull from <code>main</code> before starting a new branch to stay up to date.</li>
+  </ul>
+
+  <div class="box warning">
+    <div class="box-label">Rule</div>
+    Do not work on <code>main</code> directly. If you accidentally commit to <code>main</code>,
+    stop immediately and ask the project lead before doing anything.
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 6 — HOW TO MAKE CHANGES
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <div class="section-title">How to Make Changes (Step-by-Step)</div>
+  </div>
+
+  <p>Follow these steps every time you work on something — no exceptions.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Sync with main before starting</strong>
+        <pre>git checkout main
+git pull origin main</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Create a new branch for your work</strong>
+        <pre>git checkout -b feature/your-feature-name</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Make your changes</strong>
+        <p>Edit files in your code editor. Test locally using <code>python app.py</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Stage and commit your changes</strong>
+        <pre>git add filename.py         # Add specific files (preferred)
+git add .                   # Or add all changes
+git commit -m "feat: add export to CSV for reports"</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Push your branch to GitHub</strong>
+        <pre>git push origin feature/your-feature-name</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>Open a Pull Request on GitHub</strong>
+        <p>Go to <code>github.com/Aryankanani1/LibraFlow</code> → Click <strong>Compare & pull request</strong> → Fill in title and description → Submit.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <strong>Wait for review and approval</strong>
+        <p>The project lead reviews your PR. If changes are requested, push new commits to the same branch — the PR updates automatically.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-content">
+        <strong>After merge — clean up your branch</strong>
+        <pre>git checkout main
+git pull origin main
+git branch -d feature/your-feature-name</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 7 — COMMIT MESSAGES
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <div class="section-title">Commit Message Rules</div>
+  </div>
+
+  <p>We follow the <strong>Conventional Commits</strong> standard. Every commit message must follow this format:</p>
+
+  <pre>&lt;type&gt;: &lt;short description in lowercase&gt;</pre>
+
+  <h3>Types</h3>
+  <table>
+    <thead>
+      <tr><th>Type</th><th>When to use</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>feat</code></td><td>New feature added</td><td><code>feat: add CSV export for reports</code></td></tr>
+      <tr><td><code>fix</code></td><td>Bug fix</td><td><code>fix: correct overdue fine calculation</code></td></tr>
+      <tr><td><code>ui</code></td><td>Visual/style change only</td><td><code>ui: improve mobile navbar layout</code></td></tr>
+      <tr><td><code>refactor</code></td><td>Code cleanup, no behavior change</td><td><code>refactor: extract loan helper function</code></td></tr>
+      <tr><td><code>test</code></td><td>Adding or updating tests</td><td><code>test: add auth route unit tests</code></td></tr>
+      <tr><td><code>docs</code></td><td>Documentation only</td><td><code>docs: update setup instructions</code></td></tr>
+      <tr><td><code>chore</code></td><td>Config, dependencies, misc</td><td><code>chore: update requirements.txt</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Rules</h3>
+  <ul>
+    <li>Keep the subject line under 72 characters</li>
+    <li>Use lowercase, no period at the end</li>
+    <li>Be specific — say what changed, not just "update"</li>
+    <li>One logical change per commit — do not mix unrelated changes</li>
+  </ul>
+
+  <div class="box danger">
+    <div class="box-label">Bad Examples — Do Not Do This</div>
+    <code>git commit -m "changes"</code><br>
+    <code>git commit -m "update stuff"</code><br>
+    <code>git commit -m "WIP"</code><br>
+    <code>git commit -m "fixed"</code>
+  </div>
+
+  <div class="box success">
+    <div class="box-label">Good Examples</div>
+    <code>git commit -m "feat: add barcode scanner to issue book form"</code><br>
+    <code>git commit -m "fix: student cannot reserve already-issued book"</code><br>
+    <code>git commit -m "ui: add loading spinner to book search"</code>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 8 — PULL REQUEST RULES
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">08</div>
+    <div class="section-title">Pull Request Rules</div>
+  </div>
+
+  <h3>PR Title</h3>
+  <p>Same format as commit messages: <code>feat: add CSV export for reports</code></p>
+
+  <h3>PR Description Must Include</h3>
+  <ul>
+    <li><strong>What changed</strong> — brief description of what you built or fixed</li>
+    <li><strong>Why</strong> — reason for the change</li>
+    <li><strong>How to test</strong> — steps to verify the change works</li>
+    <li><strong>Screenshots</strong> — if it's a UI change, attach before/after screenshots</li>
+  </ul>
+
+  <h3>PR Template (copy-paste this)</h3>
+  <pre>## What changed
+- Brief description of the change
+
+## Why
+- Reason for this change
+
+## How to test
+1. Run the app: python app.py
+2. Log in as admin / student
+3. Navigate to [page]
+4. Verify [expected behavior]
+
+## Screenshots (if UI change)
+[Attach screenshot here]</pre>
+
+  <h3>Rules for Reviewers</h3>
+  <ul>
+    <li>Review PRs within 24 hours of submission</li>
+    <li>Test the change locally before approving</li>
+    <li>Leave specific comments — not just "looks good"</li>
+    <li>Do not merge your own PR — someone else must approve</li>
+  </ul>
+
+  <h3>Rules for PR Authors</h3>
+  <ul>
+    <li>Keep PRs small and focused — one feature or fix per PR</li>
+    <li>Do not force-push to a branch that has an open PR</li>
+    <li>Respond to review comments within 24 hours</li>
+    <li>Resolve all comments before asking for re-review</li>
+  </ul>
+
+  <div class="box warning">
+    <div class="box-label">Merge Strategy</div>
+    We use <strong>Squash and Merge</strong> to keep the main branch history clean.
+    This combines all your branch commits into one clean commit on main.
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 9 — CODE STANDARDS
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">09</div>
+    <div class="section-title">Code Standards</div>
+  </div>
+
+  <h3>Python</h3>
+  <ul>
+    <li>Follow <strong>PEP 8</strong> — 4-space indentation, snake_case for variables/functions</li>
+    <li>Route functions named clearly: <code>issue_book()</code>, not <code>ib()</code></li>
+    <li>All routes must have <code>@login_required</code> where appropriate</li>
+    <li>Admin-only routes must check <code>current_user.role == 'librarian'</code></li>
+    <li>Do not hardcode values — use config or constants</li>
+    <li>No <code>print()</code> statements in committed code — use Flask's logger</li>
+  </ul>
+
+  <h3>HTML / Jinja2 Templates</h3>
+  <ul>
+    <li>All pages must <code>{% extends 'base.html' %}</code></li>
+    <li>Use <code>{% block title %}</code> and <code>{% block content %}</code></li>
+    <li>Use Lucide icons: <code>&lt;i data-lucide="icon-name"&gt;&lt;/i&gt;</code> — no Font Awesome</li>
+    <li>Do not put <code>&lt;style&gt;</code> blocks in templates unless print-specific (like barcode page)</li>
+    <li>Use existing CSS classes from <code>style.css</code> — do not inline styles unless necessary</li>
+  </ul>
+
+  <h3>CSS</h3>
+  <ul>
+    <li>All styles go in <code>static/css/style.css</code></li>
+    <li>Use CSS variables: <code>var(--primary)</code>, <code>var(--muted)</code>, etc. — do not hardcode hex values</li>
+    <li>Font: <strong>Roboto Condensed</strong> only — do not introduce new fonts</li>
+    <li>Colors: indigo accent only (<code>#4f46e5</code>). Use neutral grays for everything else</li>
+    <li>Do not add new color accents — keep the palette minimal</li>
+  </ul>
+
+  <h3>Database</h3>
+  <ul>
+    <li>Never delete <code>libraflow.db</code> in a shared environment without team notice</li>
+    <li>All model changes must be reflected in <code>models.py</code></li>
+    <li>If you add a new column, update the seed data accordingly</li>
+    <li>Do not commit <code>libraflow.db</code> to git</li>
+  </ul>
+
+  <div class="box">
+    <div class="box-label">CSS Variables Reference</div>
+    <code>--primary: #4f46e5</code> &nbsp;|&nbsp;
+    <code>--primary-dark: #3730a3</code> &nbsp;|&nbsp;
+    <code>--muted: #64748b</code><br>
+    <code>--success: #16a34a</code> &nbsp;|&nbsp;
+    <code>--danger: #dc2626</code> &nbsp;|&nbsp;
+    <code>--warning: #b45309</code>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 10 — TEAM ROLES
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <div class="section-title">Team Roles &amp; Responsibilities</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Role</th><th>Responsibilities</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Project Lead</strong><br><span class="badge badge-danger">Owner</span></td>
+        <td>
+          Reviews and approves all PRs before merge.<br>
+          Maintains the <code>main</code> branch.<br>
+          Makes final decisions on architecture and design.<br>
+          Manages GitHub repository settings and collaborators.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Developer</strong><br><span class="badge badge-primary">Collaborator</span></td>
+        <td>
+          Works on assigned features/fixes in their own branch.<br>
+          Opens PRs for review — never pushes directly to <code>main</code>.<br>
+          Writes clean, documented code following this guide.<br>
+          Tests their own changes before submitting a PR.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Communication Rules</h3>
+  <ul>
+    <li>Discuss new features or major changes with the team before starting</li>
+    <li>If you are blocked, communicate immediately — do not wait</li>
+    <li>Use GitHub PR comments for code discussions — keep it written</li>
+    <li>If you are going to be unavailable, let the team know in advance</li>
+  </ul>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 11 — RULES & REGULATIONS
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">11</div>
+    <div class="section-title">Rules &amp; Regulations</div>
+  </div>
+
+  <div class="box danger">
+    <div class="box-label">Strictly Prohibited</div>
+    <ul style="margin:0; padding-left:1.25rem;">
+      <li>Pushing directly to <code>main</code></li>
+      <li>Merging your own Pull Request</li>
+      <li>Committing <code>libraflow.db</code>, <code>.env</code>, or any credential files</li>
+      <li>Using <code>git push --force</code> on shared branches</li>
+      <li>Deleting another team member's branch without permission</li>
+      <li>Introducing new external dependencies without team discussion</li>
+    </ul>
+  </div>
+
+  <div class="box warning">
+    <div class="box-label">Required Before Every PR</div>
+    <ul style="margin:0; padding-left:1.25rem;">
+      <li>Test the app locally — make sure nothing is broken</li>
+      <li>Run <code>python -m pytest</code> if tests exist</li>
+      <li>Check that your code follows the standards in Section 9</li>
+      <li>Make sure the PR description is complete (Section 8)</li>
+    </ul>
+  </div>
+
+  <div class="box success">
+    <div class="box-label">Best Practices</div>
+    <ul style="margin:0; padding-left:1.25rem;">
+      <li>Keep your local <code>main</code> always up to date with <code>git pull</code></li>
+      <li>Commit often with small, logical commits — do not build for 3 days and commit everything at once</li>
+      <li>If a feature is large, break it into smaller PRs</li>
+      <li>Write a comment in the code only when the logic is not obvious</li>
+      <li>Delete your branch after it is merged</li>
+    </ul>
+  </div>
+
+  <h3>What Happens if Rules are Broken</h3>
+  <table>
+    <thead>
+      <tr><th>Violation</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Direct push to <code>main</code></td><td>Revert commit, team discussion</td></tr>
+      <tr><td>Committed credentials or DB file</td><td>Immediately rotate secrets, force-push revert</td></tr>
+      <tr><td>Broken PR merged to main</td><td>Revert merge, fix in new branch, re-review</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 12 — RUNNING TESTS
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">12</div>
+    <div class="section-title">Running Tests</div>
+  </div>
+
+  <h3>Install Test Dependencies</h3>
+<pre>pip install pytest</pre>
+
+  <h3>Run All Tests</h3>
+<pre>python -m pytest tests/ -v</pre>
+
+  <h3>Run a Specific Test File</h3>
+<pre>python -m pytest tests/test_auth.py -v</pre>
+
+  <h3>Test Files</h3>
+  <table>
+    <thead>
+      <tr><th>File</th><th>Tests</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>tests/test_auth.py</code></td><td>Login, logout, registration, role checks</td></tr>
+      <tr><td><code>tests/test_models.py</code></td><td>User, Book, Loan, Reservation, Review models</td></tr>
+      <tr><td><code>tests/test_student.py</code></td><td>Dashboard, search, borrow, reserve, review</td></tr>
+      <tr><td><code>tests/test_admin.py</code></td><td>Admin panel, issue/return, reports</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box">
+    <div class="box-label">Note</div>
+    Tests use an in-memory SQLite database — they do not affect your local <code>libraflow.db</code>.
+    Always run tests before opening a Pull Request.
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION 13 — DEPLOYMENT
+══════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <div class="section-num">13</div>
+    <div class="section-title">Deployment Notes</div>
+  </div>
+
+  <p>LibraFlow is currently a development project. These are notes for when deployment is considered.</p>
+
+  <h3>Before Deploying</h3>
+  <ul>
+    <li>Set <code>DEBUG = False</code> in <code>config.py</code></li>
+    <li>Change <code>SECRET_KEY</code> to a strong random value — never use the dev key</li>
+    <li>Switch from SQLite to PostgreSQL or MySQL for production</li>
+    <li>Set up proper environment variables — never hardcode secrets in code</li>
+    <li>Run all tests and ensure they pass</li>
+  </ul>
+
+  <h3>Environment Variables (Production)</h3>
+<pre>SECRET_KEY=your-random-secret-key-here
+DATABASE_URL=postgresql://user:pass@host/dbname
+FLASK_ENV=production</pre>
+
+  <h3>Recommended Hosting Options</h3>
+  <table>
+    <thead>
+      <tr><th>Platform</th><th>Type</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Render</td><td>Free tier available</td><td>Easy Flask deployment, auto-deploy from GitHub</td></tr>
+      <tr><td>Railway</td><td>Free tier available</td><td>Good for Flask + PostgreSQL combo</td></tr>
+      <tr><td>PythonAnywhere</td><td>Free tier available</td><td>Simple, beginner-friendly Flask hosting</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <div style="text-align:center; color:#64748b; font-size:11px; margin-top:2rem;">
+    <p><strong>LibraFlow Team Developer Guide</strong> &nbsp;|&nbsp; Version 1.0 &nbsp;|&nbsp; April 2026</p>
+    <p>github.com/Aryankanani1/LibraFlow</p>
+  </div>
+</div>
+
+</body>
+</html>
