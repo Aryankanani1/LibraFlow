@@ -4,43 +4,43 @@
 {% block content %}
 <div class="welcome-banner">
   <div>
-    <h2>Admin Dashboard 🛠️</h2>
+    <h2>Admin Dashboard</h2>
     <p>Welcome, {{ current_user.name }} &nbsp;·&nbsp; {{ current_user.employee_id or 'Librarian' }}</p>
   </div>
-  <div class="welcome-banner-icon">⚙️</div>
+  <div class="welcome-banner-icon"><i data-lucide="shield-check"></i></div>
 </div>
 
 <div class="stats-grid stats-grid-5">
   <div class="stat-card stat-blue">
-    <div class="stat-icon">📚</div>
+    <div class="stat-icon"><i data-lucide="library"></i></div>
     <div class="stat-info">
       <div class="stat-number">{{ total_books }}</div>
       <div class="stat-label">Total Books</div>
     </div>
   </div>
   <div class="stat-card stat-green">
-    <div class="stat-icon">✅</div>
+    <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
     <div class="stat-info">
       <div class="stat-number">{{ available_copies }}</div>
       <div class="stat-label">Available</div>
     </div>
   </div>
   <div class="stat-card stat-orange">
-    <div class="stat-icon">📤</div>
+    <div class="stat-icon"><i data-lucide="arrow-right-from-line"></i></div>
     <div class="stat-info">
       <div class="stat-number">{{ active_loans }}</div>
       <div class="stat-label">Active Loans</div>
     </div>
   </div>
   <div class="stat-card stat-red">
-    <div class="stat-icon">⚠️</div>
+    <div class="stat-icon"><i data-lucide="alert-circle"></i></div>
     <div class="stat-info">
       <div class="stat-number">{{ overdue_loans|length }}</div>
       <div class="stat-label">Overdue</div>
     </div>
   </div>
   <div class="stat-card stat-purple">
-    <div class="stat-icon">🔖</div>
+    <div class="stat-icon"><i data-lucide="bookmark"></i></div>
     <div class="stat-info">
       <div class="stat-number">{{ pending_reservations }}</div>
       <div class="stat-label">Pending</div>
@@ -49,11 +49,11 @@
 </div>
 
 <div class="quick-actions-bar">
-  <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">+ Add Book</a>
-  <a href="{{ url_for('admin.issue_book') }}" class="btn btn-outline">Issue Book</a>
-  <a href="{{ url_for('admin.scan_barcode') }}" class="btn btn-outline">Scan Barcode</a>
-  <a href="{{ url_for('admin.reservations') }}" class="btn btn-outline">Approve Requests</a>
-  <a href="{{ url_for('admin.reports') }}" class="btn btn-outline">Generate Report</a>
+  <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary"><i data-lucide="plus"></i> Add Book</a>
+  <a href="{{ url_for('admin.issue_book') }}" class="btn btn-outline"><i data-lucide="arrow-right-from-line"></i> Issue Book</a>
+  <a href="{{ url_for('admin.scan_barcode') }}" class="btn btn-outline"><i data-lucide="scan-line"></i> Scan Barcode</a>
+  <a href="{{ url_for('admin.reservations') }}" class="btn btn-outline"><i data-lucide="check-square"></i> Approve Requests</a>
+  <a href="{{ url_for('admin.reports') }}" class="btn btn-outline"><i data-lucide="bar-chart-2"></i> Reports</a>
 </div>
 
 {% if overdue_loans %}

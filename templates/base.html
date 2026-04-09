@@ -6,42 +6,55 @@
   <title>{% block title %}LibraFlow{% endblock %}</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
 {% if current_user.is_authenticated %}
 <nav class="navbar">
   <a class="navbar-brand" href="{{ url_for('auth.index') }}">
-    <span class="brand-icon">📚</span> LibraFlow
+    <i data-lucide="library-big" class="brand-icon"></i> LibraFlow
   </a>
 
   <div class="navbar-links" id="nav-links">
     {% if current_user.is_student() %}
       <a href="{{ url_for('student.dashboard') }}"
-         class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}">Dashboard</a>
+         class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}">
+         <i data-lucide="layout-dashboard"></i> Dashboard</a>
       <a href="{{ url_for('student.search') }}"
-         class="nav-link {% if request.endpoint == 'student.search' %}active{% endif %}">Search Books</a>
+         class="nav-link {% if request.endpoint == 'student.search' %}active{% endif %}">
+         <i data-lucide="search"></i> Search</a>
       <a href="{{ url_for('student.history') }}"
-         class="nav-link {% if request.endpoint == 'student.history' %}active{% endif %}">My History</a>
+         class="nav-link {% if request.endpoint == 'student.history' %}active{% endif %}">
+         <i data-lucide="clock"></i> History</a>
       <a href="{{ url_for('student.reservations') }}"
-         class="nav-link {% if request.endpoint == 'student.reservations' %}active{% endif %}">My Reservations</a>
+         class="nav-link {% if request.endpoint == 'student.reservations' %}active{% endif %}">
+         <i data-lucide="bookmark"></i> Reservations</a>
       <a href="{{ url_for('student.map') }}"
-         class="nav-link {% if request.endpoint == 'student.map' %}active{% endif %}">Library Map</a>
+         class="nav-link {% if request.endpoint == 'student.map' %}active{% endif %}">
+         <i data-lucide="map"></i> Library Map</a>
     {% else %}
       <a href="{{ url_for('admin.dashboard') }}"
-         class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
+         class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+         <i data-lucide="layout-dashboard"></i> Dashboard</a>
       <a href="{{ url_for('admin.books') }}"
-         class="nav-link {% if request.endpoint in ['admin.books','admin.add_book','admin.edit_book'] %}active{% endif %}">Books</a>
+         class="nav-link {% if request.endpoint in ['admin.books','admin.add_book','admin.edit_book'] %}active{% endif %}">
+         <i data-lucide="book-copy"></i> Books</a>
       <a href="{{ url_for('admin.loans') }}"
-         class="nav-link {% if request.endpoint in ['admin.loans','admin.issue_book'] %}active{% endif %}">Loans</a>
+         class="nav-link {% if request.endpoint in ['admin.loans','admin.issue_book'] %}active{% endif %}">
+         <i data-lucide="file-text"></i> Loans</a>
       <a href="{{ url_for('admin.reservations') }}"
-         class="nav-link {% if request.endpoint == 'admin.reservations' %}active{% endif %}">Reservations</a>
+         class="nav-link {% if request.endpoint == 'admin.reservations' %}active{% endif %}">
+         <i data-lucide="bookmark"></i> Reservations</a>
       <a href="{{ url_for('admin.overdue') }}"
-         class="nav-link {% if request.endpoint == 'admin.overdue' %}active{% endif %}">Overdue</a>
+         class="nav-link {% if request.endpoint == 'admin.overdue' %}active{% endif %}">
+         <i data-lucide="alert-circle"></i> Overdue</a>
       <a href="{{ url_for('admin.scan_barcode') }}"
-         class="nav-link {% if request.endpoint == 'admin.scan_barcode' %}active{% endif %}">Scan</a>
+         class="nav-link {% if request.endpoint == 'admin.scan_barcode' %}active{% endif %}">
+         <i data-lucide="scan-line"></i> Scan</a>
       <a href="{{ url_for('admin.reports') }}"
-         class="nav-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">Reports</a>
+         class="nav-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+         <i data-lucide="bar-chart-2"></i> Reports</a>
     {% endif %}
   </div>
 
@@ -50,10 +63,13 @@
       {{ 'Admin' if current_user.is_librarian() else 'Student' }}
     </span>
     <span class="user-name">{{ current_user.name.split()[0] }}</span>
-    <a href="{{ url_for('auth.logout') }}" class="nav-link logout-link">Logout</a>
+    <a href="{{ url_for('auth.logout') }}" class="nav-link logout-link">
+      <i data-lucide="log-out"></i> Logout</a>
   </div>
 
-  <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menu">☰</button>
+  <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menu">
+    <i data-lucide="menu"></i>
+  </button>
 </nav>
 {% endif %}
 
@@ -63,7 +79,7 @@
       <div class="flash-messages">
         {% for category, message in messages %}
           <div class="alert alert-{{ category }}">
-            {% if category == 'success' %}✓{% elif category == 'danger' %}✕{% elif category == 'warning' %}⚠{% else %}ℹ{% endif %}
+            {% if category == 'success' %}<i data-lucide="check-circle"></i>{% elif category == 'danger' %}<i data-lucide="x-circle"></i>{% elif category == 'warning' %}<i data-lucide="alert-triangle"></i>{% else %}<i data-lucide="info"></i>{% endif %}
             {{ message }}
           </div>
         {% endfor %}
@@ -82,6 +98,7 @@
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
+lucide.createIcons();
 function toggleNav() {
   document.getElementById('nav-links').classList.toggle('open');
 }
