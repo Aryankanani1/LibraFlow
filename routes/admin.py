@@ -339,9 +339,9 @@ def print_barcodes(book_id):
     return render_template('admin/print_barcodes.html', book=book, copies=copies)
 
 
-# ── Google Books API ──────────────────────────────────────────────────────────
+# ── Book Lookup API (Open Library — no rate limits, no API key) ───────────────
 
-@admin_bp.route('/api/google-books')
+@admin_bp.route('/api/google-books')   # keep same URL so frontend JS still works
 @login_required
 @librarian_required
 def google_books_lookup():
@@ -349,58 +349,64 @@ def google_books_lookup():
     if not query:
         return jsonify([])
 
-    # If query looks like an ISBN (digits only or with dashes), search by isbn
+    ctx = ssl.create_default_context(cafile=certifi.where())
     clean = query.replace('-', '').replace(' ', '')
+    results = []
+
+    # ── ISBN lookup via Open Library ─────────────────────────────────────────
     if clean.isdigit() and len(clean) in (10, 13):
-        search_query = f'isbn:{clean}'
-    else:
-        search_query = query
+        url = f'https://openlibrary.org/api/books?bibkeys=ISBN:{clean}&format=json&jscmd=data'
+        try:
+            with urllib.request.urlopen(url, timeout=6, context=ctx) as resp:
+                raw = json.loads(resp.read().decode())
+            for key, book in raw.items():
+                authors   = ', '.join(a.get('name', '') for a in book.get('authors', []))
+                publishers = book.get('publishers', [])
+                publisher  = publishers[0].get('name', '') if publishers else ''
+                subjects   = book.get('subjects', [])
+                category   = subjects[0].get('name', 'General').split('--')[0].strip() if subjects else 'General'
+                cover      = book.get('cover', {}).get('medium', '')
+                isbn_list  = book.get('identifiers', {}).get('isbn_13', book.get('identifiers', {}).get('isbn_10', [clean]))
+                results.append({
+                    'title':     book.get('title', ''),
+                    'authors':   authors or 'Unknown',
+                    'publisher': publisher,
+                    'isbn':      isbn_list[0] if isbn_list else clean,
+                    'category':  category,
+                    'thumbnail': cover,
+                })
+        except Exception:
+            pass
+        return jsonify(results)
 
-    url = 'https://www.googleapis.com/books/v1/volumes?' + urllib.parse.urlencode({
-        'q': search_query,
-        'maxResults': 8,
-        'printType': 'books',
-        'langRestrict': 'en'
+    # ── Title / keyword search via Open Library ───────────────────────────────
+    url = 'https://openlibrary.org/search.json?' + urllib.parse.urlencode({
+        'q': query, 'limit': 10, 'fields': 'title,author_name,publisher,isbn,subject,cover_i,first_publish_year'
     })
-
     try:
-        ctx = ssl.create_default_context(cafile=certifi.where())
-        with urllib.request.urlopen(url, timeout=5, context=ctx) as resp:
+        with urllib.request.urlopen(url, timeout=6, context=ctx) as resp:
             raw = json.loads(resp.read().decode())
     except Exception:
         return jsonify([])
 
-    results = []
-    for item in raw.get('items', []):
-        info = item.get('volumeInfo', {})
+    for doc in raw.get('docs', []):
+        isbn_list = doc.get('isbn', [])
+        isbn13 = next((i for i in isbn_list if len(i) == 13), '')
+        isbn10 = next((i for i in isbn_list if len(i) == 10), '')
+        isbn   = isbn13 or isbn10
 
-        # Extract best ISBN
-        isbn = ''
-        for identifier in info.get('industryIdentifiers', []):
-            if identifier.get('type') == 'ISBN_13':
-                isbn = identifier.get('identifier', '')
-                break
-        if not isbn:
-            for identifier in info.get('industryIdentifiers', []):
-                if identifier.get('type') == 'ISBN_10':
-                    isbn = identifier.get('identifier', '')
-                    break
-
-        # Extract category
-        categories = info.get('categories', [])
-        category = categories[0].split('/')[0].strip() if categories else 'General'
-
-        # Thumbnail
-        image_links = info.get('imageLinks', {})
-        thumbnail = image_links.get('thumbnail', image_links.get('smallThumbnail', ''))
-        # Force HTTPS
-        if thumbnail:
-            thumbnail = thumbnail.replace('http://', 'https://')
+        authors   = ', '.join(doc.get('author_name', ['Unknown']))
+        publishers = doc.get('publisher', [])
+        publisher  = publishers[0] if publishers else ''
+        subjects   = doc.get('subject', [])
+        category   = subjects[0].split('--')[0].strip() if subjects else 'General'
+        cover_id   = doc.get('cover_i')
+        thumbnail  = f'https://covers.openlibrary.org/b/id/{cover_id}-M.jpg' if cover_id else ''
 
         results.append({
-            'title':     info.get('title', ''),
-            'authors':   ', '.join(info.get('authors', ['Unknown'])),
-            'publisher': info.get('publisher', ''),
+            'title':     doc.get('title', ''),
+            'authors':   authors,
+            'publisher': publisher,
             'isbn':      isbn,
             'category':  category,
             'thumbnail': thumbnail,
