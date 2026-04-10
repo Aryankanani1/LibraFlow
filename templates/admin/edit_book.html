@@ -24,7 +24,23 @@
       </div>
       <div class="form-group">
         <label>Category</label>
-        <input type="text" name="category" class="form-input" value="{{ book.category }}" required>
+        <select name="category" class="form-input" required>
+          <option value="Programming"        {% if book.category == 'Programming' %}selected{% endif %}>Programming</option>
+          <option value="Web Development"    {% if book.category == 'Web Development' %}selected{% endif %}>Web Development</option>
+          <option value="Software Engineering" {% if book.category == 'Software Engineering' %}selected{% endif %}>Software Engineering</option>
+          <option value="Algorithms"         {% if book.category == 'Algorithms' %}selected{% endif %}>Algorithms</option>
+          <option value="Machine Learning"   {% if book.category == 'Machine Learning' %}selected{% endif %}>Machine Learning</option>
+          <option value="Data Science"       {% if book.category == 'Data Science' %}selected{% endif %}>Data Science</option>
+          <option value="Databases"          {% if book.category == 'Databases' %}selected{% endif %}>Databases</option>
+          <option value="Computer Science"   {% if book.category == 'Computer Science' %}selected{% endif %}>Computer Science</option>
+          <option value="Cybersecurity"      {% if book.category == 'Cybersecurity' %}selected{% endif %}>Cybersecurity</option>
+          <option value="DevOps"             {% if book.category == 'DevOps' %}selected{% endif %}>DevOps</option>
+          <option value="Operating Systems"  {% if book.category == 'Operating Systems' %}selected{% endif %}>Operating Systems</option>
+          <option value="Networking"         {% if book.category == 'Networking' %}selected{% endif %}>Networking</option>
+          <option value="Mathematics"        {% if book.category == 'Mathematics' %}selected{% endif %}>Mathematics</option>
+          <option value="Computers"          {% if book.category == 'Computers' %}selected{% endif %}>Computers</option>
+          <option value="General"            {% if book.category == 'General' %}selected{% endif %}>General</option>
+        </select>
       </div>
       <div class="form-group">
         <label>Publisher</label>

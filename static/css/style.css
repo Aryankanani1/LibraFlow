@@ -267,6 +267,15 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 0 0 3px rgba(79,70,229,.12);
 }
 .form-input:disabled { background: var(--bg); color: var(--muted); cursor: not-allowed; }
+select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .75rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
 .form-actions { display: flex; gap: .75rem; margin-top: 1.5rem; }
 
 /* ── Search ───────────────────────────────────────────────────────────── */

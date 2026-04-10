@@ -42,7 +42,24 @@
       </div>
       <div class="form-group">
         <label>Category *</label>
-        <input type="text" id="f-category" name="category" class="form-input" required placeholder="e.g. Programming, Science">
+        <select id="f-category" name="category" class="form-input" required>
+          <option value="" disabled selected>Select a category</option>
+          <option value="Programming">Programming</option>
+          <option value="Web Development">Web Development</option>
+          <option value="Software Engineering">Software Engineering</option>
+          <option value="Algorithms">Algorithms</option>
+          <option value="Machine Learning">Machine Learning</option>
+          <option value="Data Science">Data Science</option>
+          <option value="Databases">Databases</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Cybersecurity">Cybersecurity</option>
+          <option value="DevOps">DevOps</option>
+          <option value="Operating Systems">Operating Systems</option>
+          <option value="Networking">Networking</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Computers">Computers</option>
+          <option value="General">General</option>
+        </select>
       </div>
       <div class="form-group">
         <label>Publisher</label>
@@ -86,7 +103,7 @@ async function lookupBook() {
       html += `
         <div class="gb-result-item" onclick="fillForm(${i})">
           <div class="gb-result-inner">
-            ${book.thumbnail ? `<img src="${book.thumbnail}" class="gb-thumb" alt="cover">` : '<div class="gb-thumb-placeholder">📖</div>'}
+            ${book.thumbnail ? `<img src="${book.thumbnail}" class="gb-thumb" alt="cover">` : '<div class="gb-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>'}
             <div class="gb-result-info">
               <strong>${book.title}</strong><br>
               <span class="text-muted">${book.authors}</span><br>
@@ -110,7 +127,11 @@ function fillForm(index) {
   document.getElementById('f-isbn').value      = book.isbn || '';
   document.getElementById('f-title').value     = book.title || '';
   document.getElementById('f-author').value    = book.authors || '';
-  document.getElementById('f-category').value  = book.category || '';
+  // Try to match category from API to dropdown options
+  const catSelect = document.getElementById('f-category');
+  const catVal = book.category || '';
+  const matched = [...catSelect.options].find(o => o.value.toLowerCase() === catVal.toLowerCase());
+  catSelect.value = matched ? matched.value : 'General';
   document.getElementById('f-publisher').value = book.publisher || '';
 
   // Highlight the selected result
