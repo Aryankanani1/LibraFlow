@@ -6,61 +6,92 @@
   <h2>Scan Barcode</h2>
 </div>
 
-<div class="card" style="max-width:520px">
-  <div class="card-body">
-    <form method="POST" id="scan-form">
-      <div class="form-group">
-        <label>Barcode</label>
-        <div class="barcode-input-row">
-          <input type="text" name="barcode" id="barcode-input" class="form-input"
-                 required autofocus placeholder="Scan or type barcode...">
-          <button type="button" class="btn btn-outline scan-btn" onclick="openScanner('barcode-input', true)">
-            <i data-lucide="camera"></i> Camera
-          </button>
+<div class="scan-page-layout">
+  <div class="scan-card-wrap">
+    <div class="card">
+      <div class="scan-card-header">
+        <div class="scan-icon-wrap"><i data-lucide="scan-line"></i></div>
+        <div>
+          <div class="scan-card-title">Book Lookup</div>
+          <div class="scan-card-sub">Scan a barcode or type a copy code to check status</div>
         </div>
       </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Look Up</button>
+      <div class="card-body">
+        <form method="POST" id="scan-form">
+          <div class="form-group">
+            <label>Barcode / Copy Code</label>
+            <div class="barcode-input-row">
+              <input type="text" name="barcode" id="barcode-input" class="form-input"
+                     required autofocus placeholder="Scan or type barcode...">
+              <button type="button" class="btn btn-outline scan-btn" onclick="openScanner('barcode-input', true)">
+                <i data-lucide="camera"></i> Camera
+              </button>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+              <i data-lucide="search"></i> Look Up
+            </button>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-</div>
+    </div>
 
-{% if result %}
-<div class="card mt-4" style="max-width:520px">
-  <div class="card-header"><h3>Result</h3></div>
-  <div class="card-body">
-    {% if result.found %}
-      <table class="table table-compact">
-        <tr><th>Title</th><td><strong>{{ result.book.title }}</strong></td></tr>
-        <tr><th>Author</th><td>{{ result.book.author }}</td></tr>
-        <tr><th>ISBN</th><td>{{ result.book.isbn }}</td></tr>
-        <tr><th>Copy Code</th><td>{{ result.copy_code }}</td></tr>
-        <tr><th>Barcode</th><td><code>{{ result.barcode }}</code></td></tr>
-        <tr><th>Status</th>
-          <td>
-            <span class="badge {% if result.status == 'available' %}badge-success
-              {% elif result.status == 'issued' %}badge-danger
-              {% else %}badge-warning{% endif %}">
-              {{ result.status|capitalize }}
-            </span>
-          </td>
-        </tr>
-        <tr><th>Shelf</th><td>{{ result.shelf_location }}</td></tr>
-      </table>
-      <div class="form-actions mt-3">
-        {% if result.status in ('available', 'reserved') %}
-          <a href="{{ url_for('admin.issue_book') }}" class="btn btn-primary">Issue This Book</a>
-        {% endif %}
-        <a href="{{ url_for('admin.print_barcodes', book_id=result.book.id) }}"
-           class="btn btn-outline">🖨 Print Labels</a>
+    {% if result %}
+    <div class="card mt-4">
+      {% if result.found %}
+      <div class="scan-result-header scan-result-header--{{ result.status }}">
+        <div class="scan-result-icon">
+          {% if result.status == 'available' %}<i data-lucide="check-circle-2"></i>
+          {% elif result.status == 'issued' %}<i data-lucide="x-circle"></i>
+          {% else %}<i data-lucide="clock"></i>{% endif %}
+        </div>
+        <div>
+          <div class="scan-result-title">{{ result.book.title }}</div>
+          <div class="scan-result-author">{{ result.book.author }}</div>
+        </div>
+        <span class="badge {% if result.status == 'available' %}badge-success{% elif result.status == 'issued' %}badge-danger{% else %}badge-warning{% endif %} ms-auto">
+          {{ result.status|capitalize }}
+        </span>
       </div>
-    {% else %}
-      <div class="alert alert-danger">{{ result.message }}</div>
+      <div class="card-body">
+        <table class="table table-compact">
+          <tr><th>ISBN</th><td>{{ result.book.isbn }}</td></tr>
+          <tr><th>Copy Code</th><td><code>{{ result.copy_code }}</code></td></tr>
+          <tr><th>Barcode</th><td><code>{{ result.barcode }}</code></td></tr>
+          <tr><th>Shelf Location</th><td>{{ result.shelf_location }}</td></tr>
+        </table>
+        <div class="form-actions mt-3">
+          {% if result.status in ('available', 'reserved') %}
+            <a href="{{ url_for('admin.issue_book') }}" class="btn btn-primary">
+              <i data-lucide="arrow-right-circle"></i> Issue This Book
+            </a>
+          {% endif %}
+          <a href="{{ url_for('admin.print_barcodes', book_id=result.book.id) }}" class="btn btn-outline">
+            <i data-lucide="printer"></i> Print Labels
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <div class="card-body">
+        <div class="alert alert-danger"><i data-lucide="x-circle"></i> {{ result.message }}</div>
+      </div>
+      {% endif %}
+    </div>
     {% endif %}
+
+  </div><!-- /.scan-card-wrap -->
+
+  <div class="scan-tips">
+    <div class="scan-tips-title"><i data-lucide="lightbulb"></i> How to use</div>
+    <ul class="scan-tips-list">
+      <li>Use a barcode scanner or type the copy code manually</li>
+      <li>Click <strong>Camera</strong> to scan using your device camera</li>
+      <li>Available books can be issued directly from the result</li>
+    </ul>
   </div>
-</div>
-{% endif %}
+
+</div><!-- /.scan-page-layout -->
 
 <!-- Camera Scanner Modal -->
 {% include 'admin/_scanner_modal.html' %}
