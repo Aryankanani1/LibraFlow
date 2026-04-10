@@ -1,79 +1,150 @@
 {% extends 'base.html' %}
 {% block title %}Manage Books — LibraFlow{% endblock %}
 
+{# ── Category → color mapping ──────────────────────────────────────────── #}
+{% macro cat_color(cat) -%}
+{%- set c = cat|lower -%}
+{%- if 'program' in c or 'software' in c or 'computer' in c or 'engineer' in c -%}blue
+{%- elif 'algorithm' in c or 'data struct' in c or 'discrete' in c -%}teal
+{%- elif 'machine' in c or 'deep learn' in c or 'neural' in c or 'artificial' in c -%}purple
+{%- elif 'math' in c or 'statistic' in c or 'calculus' in c or 'linear' in c -%}green
+{%- elif 'science' in c or 'physics' in c or 'chem' in c or 'biology' in c -%}cyan
+{%- elif 'business' in c or 'econom' in c or 'finance' in c or 'management' in c -%}amber
+{%- elif 'history' in c or 'social' in c or 'politic' in c or 'geography' in c -%}orange
+{%- elif 'fiction' in c or 'novel' in c or 'literature' in c or 'poetry' in c -%}rose
+{%- elif 'network' in c or 'security' in c or 'cyber' in c -%}indigo
+{%- elif 'database' in c or 'sql' in c or 'storage' in c -%}sky
+{%- else -%}gray{%- endif -%}
+{%- endmacro %}
+
 {% block content %}
 <div class="page-header">
   <h2>Book Catalog</h2>
-  <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary"><i data-lucide="plus"></i> Add Book</a>
+  <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">
+    <i data-lucide="plus"></i> Add Book
+  </a>
 </div>
 
 <div class="card mb-4">
   <div class="card-body">
     <form method="GET" class="search-form">
       <div class="search-row">
-        <input type="text" name="q" value="{{ query }}" placeholder="Search by title, author, or ISBN..." class="form-input search-input">
-        <button type="submit" class="btn btn-primary">Search</button>
-        {% if query %}<a href="{{ url_for('admin.books') }}" class="btn btn-outline">Clear</a>{% endif %}
+        <input type="text" name="q" value="{{ query }}"
+               placeholder="Search by title, author, or ISBN..."
+               class="form-input search-input">
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="search"></i> Search
+        </button>
+        {% if query %}
+          <a href="{{ url_for('admin.books') }}" class="btn btn-outline">Clear</a>
+        {% endif %}
       </div>
     </form>
   </div>
 </div>
 
 <div class="card">
-  <div class="card-body">
-    {% if books %}
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Author</th>
-          <th>ISBN</th>
-          <th>Category</th>
-          <th>Publisher</th>
-          <th>Copies</th>
-          <th>Available</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for book in books %}
-        <tr>
-          <td><strong>{{ book.title }}</strong></td>
-          <td>{{ book.author }}</td>
-          <td><small>{{ book.isbn }}</small></td>
-          <td><span class="badge badge-category">{{ book.category }}</span></td>
-          <td><small>{{ book.publisher }}</small></td>
-          <td>{{ book.copies.count() }}</td>
-          <td>
-            <span class="{% if book.available_copies_count() > 0 %}text-green{% else %}text-red{% endif %}">
-              {{ book.available_copies_count() }}
-            </span>
-          </td>
-          <td>
-            <a href="{{ url_for('admin.edit_book', book_id=book.id) }}" class="btn btn-sm btn-outline"><i data-lucide="pencil"></i> Edit</a>
-            <a href="{{ url_for('admin.print_barcodes', book_id=book.id) }}" class="btn btn-sm btn-outline" title="Print barcode labels"><i data-lucide="printer"></i></a>
-            <form method="POST" action="{{ url_for('admin.delete_book', book_id=book.id) }}" style="display:inline">
-              <button type="submit" class="btn btn-sm btn-danger"
-                      onclick="return confirm('Delete this book and all its copies?')">Delete</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-      <div class="empty-state">
-        <div class="empty-state-icon"><i data-lucide="library"></i></div>
-        {% if query %}
-          <h4>No books found</h4>
-          <p>No books matched "{{ query }}".</p>
-        {% else %}
-          <h4>Catalog is empty</h4>
-          <p>No books added yet. Start building your catalog.</p>
-          <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary"><i data-lucide="plus"></i> Add First Book</a>
-        {% endif %}
-      </div>
-    {% endif %}
+  {% if books %}
+  <div class="catalog-table-meta">
+    <span class="text-muted">
+      {{ books|length }} book{{ 's' if books|length != 1 }}
+      {% if query %} matching "<strong>{{ query }}</strong>"{% endif %}
+    </span>
   </div>
+  <table class="table catalog-table">
+    <thead>
+      <tr>
+        <th style="width:38%">Book</th>
+        <th style="width:16%">Category</th>
+        <th style="width:14%">ISBN</th>
+        <th style="width:10%">Publisher</th>
+        <th style="width:8%" class="text-center">Copies</th>
+        <th style="width:8%" class="text-center">Available</th>
+        <th style="width:6%" class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for book in books %}
+      {% set color = cat_color(book.category) %}
+      <tr>
+
+        {# ── Book title + author ── #}
+        <td>
+          <div class="book-row">
+            <div class="book-thumb book-thumb--{{ color }}">
+              <i data-lucide="book-open"></i>
+            </div>
+            <div class="book-row-info">
+              <span class="book-row-title">{{ book.title }}</span>
+              <span class="book-row-author">{{ book.author }}</span>
+            </div>
+          </div>
+        </td>
+
+        {# ── Category badge (color-coded) ── #}
+        <td>
+          <span class="badge badge-cat badge-cat--{{ color }}">{{ book.category }}</span>
+        </td>
+
+        {# ── ISBN ── #}
+        <td><code class="isbn-code">{{ book.isbn }}</code></td>
+
+        {# ── Publisher ── #}
+        <td><small class="text-muted">{{ book.publisher or '—' }}</small></td>
+
+        {# ── Copies total ── #}
+        <td class="text-center fw-600">{{ book.copies.count() }}</td>
+
+        {# ── Available count ── #}
+        <td class="text-center">
+          {% set avail = book.available_copies_count() %}
+          {% set total = book.copies.count() %}
+          <span class="avail-pill {% if avail > 0 %}avail-pill--green{% else %}avail-pill--red{% endif %}">
+            {{ avail }}<span class="avail-total"> / {{ total }}</span>
+          </span>
+        </td>
+
+        {# ── Actions ── #}
+        <td class="text-center">
+          <div class="table-actions table-actions--center">
+            <a href="{{ url_for('admin.edit_book', book_id=book.id) }}"
+               class="icon-btn icon-btn--edit" title="Edit book">
+              <i data-lucide="pencil"></i>
+            </a>
+            <a href="{{ url_for('admin.print_barcodes', book_id=book.id) }}"
+               class="icon-btn icon-btn--neutral" title="Print barcode labels">
+              <i data-lucide="printer"></i>
+            </a>
+            <form method="POST" action="{{ url_for('admin.delete_book', book_id=book.id) }}" style="display:inline">
+              <button type="submit" class="icon-btn icon-btn--delete" title="Delete book"
+                      onclick="return confirm('Delete this book and all its copies?')">
+                <i data-lucide="trash-2"></i>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% else %}
+  <div class="card-body">
+    <div class="empty-state">
+      <div class="empty-state-icon"><i data-lucide="library"></i></div>
+      {% if query %}
+        <h4>No books found</h4>
+        <p>No books matched "{{ query }}".</p>
+        <a href="{{ url_for('admin.books') }}" class="btn btn-outline">Clear Search</a>
+      {% else %}
+        <h4>Catalog is empty</h4>
+        <p>No books added yet. Start building your catalog.</p>
+        <a href="{{ url_for('admin.add_book') }}" class="btn btn-primary">
+          <i data-lucide="plus"></i> Add First Book
+        </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
