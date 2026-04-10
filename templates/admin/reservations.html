@@ -18,6 +18,9 @@
 <div class="card">
   <div class="card-body">
     {% if reservations %}
+    <div class="table-meta">
+      <span class="text-muted">{{ reservations|length }} reservation{{ 's' if reservations|length != 1 }}</span>
+    </div>
     <table class="table">
       <thead>
         <tr>
@@ -69,7 +72,9 @@
     </table>
     {% else %}
       <div class="empty-state">
-        <p>No reservations found.</p>
+        <div class="empty-state-icon"><i data-lucide="bookmark"></i></div>
+        <h4>No Reservations</h4>
+        <p>No reservation requests found for this filter.</p>
       </div>
     {% endif %}
   </div>
