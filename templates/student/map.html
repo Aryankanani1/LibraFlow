@@ -109,7 +109,7 @@
 /* Sections grid */
 .sections-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: .75rem;
 }
 .map-section {
@@ -203,10 +203,16 @@
   color: var(--primary);
 }
 
+@media (max-width: 1100px) {
+  .sections-grid { grid-template-columns: repeat(4, 1fr); }
+}
 @media (max-width: 900px) {
   .map-wrapper { grid-template-columns: 1fr; }
-  .sections-grid { grid-template-columns: repeat(2, 1fr); }
+  .sections-grid { grid-template-columns: repeat(3, 1fr); }
   .map-panel { position: static; }
+}
+@media (max-width: 600px) {
+  .sections-grid { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 
