@@ -179,21 +179,21 @@ def book_detail(book_id):
 def map():
     # Section metadata: icon, display name
     SECTION_META = {
-        'Programming':        '💻',
-        'Web Development':    '🌐',
-        'Software Engineering':'⚙️',
-        'Algorithms':         '🔢',
-        'Machine Learning':   '🤖',
-        'Data Science':       '📊',
-        'Databases':          '🗄️',
-        'Computer Science':   '🖥️',
-        'Cybersecurity':      '🔒',
-        'DevOps':             '🚀',
-        'Operating Systems':  '🖱️',
-        'Networking':         '📡',
-        'Mathematics':        '📐',
-        'General':            '📚',
-        'Computers':          '💾',
+        'Programming':         'code-2',
+        'Web Development':     'globe',
+        'Software Engineering':'settings-2',
+        'Algorithms':          'binary',
+        'Machine Learning':    'cpu',
+        'Data Science':        'bar-chart-2',
+        'Databases':           'database',
+        'Computer Science':    'monitor',
+        'Cybersecurity':       'shield',
+        'DevOps':              'git-branch',
+        'Operating Systems':   'layers',
+        'Networking':          'network',
+        'Mathematics':         'calculator',
+        'General':             'book',
+        'Computers':           'laptop',
     }
 
     all_books = Book.query.order_by(Book.category, Book.title).all()
