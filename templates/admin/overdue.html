@@ -4,9 +4,16 @@
 {% block content %}
 <div class="page-header">
   <h2>Overdue Books</h2>
-  <a href="{{ url_for('admin.reports', type='overdue') }}" class="btn btn-outline">
-    <i data-lucide="file-text"></i> Generate Report
-  </a>
+  <div style="display:flex;gap:.75rem">
+    <form method="POST" action="{{ url_for('admin.send_overdue_reminders') }}">
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="send"></i> Send All Reminders
+      </button>
+    </form>
+    <a href="{{ url_for('admin.reports', type='overdue') }}" class="btn btn-outline">
+      <i data-lucide="file-text"></i> Generate Report
+    </a>
+  </div>
 </div>
 
 {% if overdue_loans %}
@@ -51,10 +58,10 @@
           <td><span class="badge badge-danger">{{ loan.due_date.strftime('%b %d, %Y') }}</span></td>
           <td class="text-red fw-600">{{ loan.fine_amount()|int }} day(s)</td>
           <td class="text-red fw-600">${{ "%.2f"|format(loan.fine_amount()) }}</td>
-          <td>
+          <td style="display:flex;gap:.5rem;flex-wrap:wrap">
             <form method="POST" action="{{ url_for('admin.return_book', loan_id=loan.id) }}">
               <button type="submit" class="btn btn-sm btn-success">
-                <i data-lucide="check"></i> Mark Returned
+                <i data-lucide="check"></i> Return
               </button>
             </form>
           </td>

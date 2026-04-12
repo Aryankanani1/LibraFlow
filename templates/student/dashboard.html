@@ -12,11 +12,25 @@
 
 {% if overdue %}
 <div class="alert alert-danger">
+  <i data-lucide="alert-circle"></i>
   <strong>Overdue Alert:</strong> You have {{ overdue|length }} overdue book(s). Please return them to avoid additional fines.
 </div>
 {% endif %}
+{% if outstanding_fine.total > 0 %}
+<div class="alert alert-warning">
+  <i data-lucide="circle-dollar-sign"></i>
+  <strong>Outstanding Fine:</strong> You have an unpaid fine of ${{ "%.2f"|format(outstanding_fine.total) }}. Please pay at the library desk.
+</div>
+{% endif %}
 
-<div class="stats-grid">
+{% set outstanding_fine = namespace(total=0) %}
+{% for loan in current_user.loans_as_student.all() %}
+  {% if loan.fine_charged and not loan.fine_paid %}
+    {% set outstanding_fine.total = outstanding_fine.total + loan.fine_charged %}
+  {% endif %}
+{% endfor %}
+
+<div class="stats-grid stats-grid-4">
   <div class="stat-card stat-blue">
     <div class="stat-icon"><i data-lucide="book-open"></i></div>
     <div class="stat-info">
@@ -36,6 +50,13 @@
     <div class="stat-info">
       <div class="stat-number">{{ pending_reservations|length }}</div>
       <div class="stat-label">Reservations</div>
+    </div>
+  </div>
+  <div class="stat-card {% if outstanding_fine.total > 0 %}stat-red{% endif %}">
+    <div class="stat-icon"><i data-lucide="circle-dollar-sign"></i></div>
+    <div class="stat-info">
+      <div class="stat-number">${{ "%.2f"|format(outstanding_fine.total) }}</div>
+      <div class="stat-label">Outstanding Fine</div>
     </div>
   </div>
 </div>
@@ -115,9 +136,10 @@
   <div class="card-header"><h3>Quick Actions</h3></div>
   <div class="card-body">
     <div class="action-buttons">
-      <a href="{{ url_for('student.search') }}" class="btn btn-primary">Search Books</a>
-      <a href="{{ url_for('student.history') }}" class="btn btn-outline">Borrowing History</a>
-      <a href="{{ url_for('student.reservations') }}" class="btn btn-outline">My Reservations</a>
+      <a href="{{ url_for('student.search') }}" class="btn btn-primary"><i data-lucide="search"></i> Search Books</a>
+      <a href="{{ url_for('student.history') }}" class="btn btn-outline"><i data-lucide="clock"></i> Borrowing History</a>
+      <a href="{{ url_for('student.reservations') }}" class="btn btn-outline"><i data-lucide="bookmark"></i> My Reservations</a>
+      <a href="{{ url_for('student.notifications') }}" class="btn btn-outline"><i data-lucide="bell"></i> Notifications</a>
     </div>
   </div>
 </div>

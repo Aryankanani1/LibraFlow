@@ -51,8 +51,17 @@
               {% endif %}
             </td>
             <td>
-              {% if loan.fine_amount() > 0 %}
+              {% if loan.fine_charged %}
+                {% if loan.fine_paid %}
+                  <span class="text-green">${{ "%.2f"|format(loan.fine_charged) }}</span>
+                  <span class="badge badge-success">Paid</span>
+                {% else %}
+                  <span class="text-red">${{ "%.2f"|format(loan.fine_charged) }}</span>
+                  <span class="badge badge-danger">Unpaid</span>
+                {% endif %}
+              {% elif loan.fine_amount() > 0 %}
                 <span class="text-red">${{ "%.2f"|format(loan.fine_amount()) }}</span>
+                <span class="badge badge-danger">Overdue</span>
               {% else %}
                 <span class="text-muted">—</span>
               {% endif %}

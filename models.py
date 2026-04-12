@@ -16,6 +16,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False)  # 'student' or 'librarian'
     student_id = db.Column(db.String(50), nullable=True)
     employee_id = db.Column(db.String(50), nullable=True)
+    phone_number = db.Column(db.String(20), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     loans_as_student = db.relationship(
@@ -195,11 +196,16 @@ class Loan(db.Model):
     due_date = db.Column(db.DateTime, nullable=False)
     return_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), default='active')  # active, returned, overdue
+    fine_charged = db.Column(db.Float, nullable=True)   # frozen at return time
+    fine_paid = db.Column(db.Boolean, default=False, nullable=False)
     student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     copy_id = db.Column(db.Integer, db.ForeignKey('book_copies.id'), nullable=False)
     librarian_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
     def mark_returned(self):
+        # Freeze the fine before changing status
+        live = self._live_fine()
+        self.fine_charged = live if live > 0 else None
         self.return_date = datetime.now(timezone.utc)
         self.status = 'returned'
         if self.copy:
@@ -211,11 +217,26 @@ class Loan(db.Model):
             return datetime.now(timezone.utc) > self.due_date.replace(tzinfo=timezone.utc)
         return False
 
-    def fine_amount(self):
-        if self.is_overdue():
-            delta = datetime.now(timezone.utc) - self.due_date.replace(tzinfo=timezone.utc)
-            return max(0, delta.days) * 1.0  # $1 per day
+    def _live_fine(self):
+        """Compute fine from today (only meaningful while loan is active/overdue)."""
+        if self.status == 'active':
+            due = self.due_date.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > due:
+                delta = datetime.now(timezone.utc) - due
+                return max(0, delta.days) * 1.0
         return 0.0
+
+    def fine_amount(self):
+        """Return the fine: frozen value for returned loans, live calc for active ones."""
+        if self.fine_charged is not None:
+            return self.fine_charged
+        return self._live_fine()
+
+    def outstanding_fine(self):
+        """Fine still owed (0 if paid or no fine)."""
+        if self.fine_paid:
+            return 0.0
+        return self.fine_charged or 0.0
 
 
 class Review(db.Model):
@@ -244,3 +265,18 @@ class Report(db.Model):
         db.session.add(self)
         db.session.commit()
         return self
+
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    type = db.Column(db.String(10), nullable=False)    # 'email' | 'sms'
+    subject = db.Column(db.String(200))
+    message = db.Column(db.Text, nullable=False)
+    sent_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    status = db.Column(db.String(20), default='sent')  # 'sent' | 'failed' | 'pending'
+    read = db.Column(db.Boolean, default=False)
+
+    user = db.relationship('User', backref=db.backref('notifications', lazy='dynamic'))

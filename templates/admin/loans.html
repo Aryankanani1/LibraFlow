@@ -61,14 +61,30 @@
             {% endif %}
           </td>
           <td>
-            {% if loan.fine_amount() > 0 %}
+            {% if loan.fine_charged %}
+              {% if loan.fine_paid %}
+                <span class="text-green">${{ "%.2f"|format(loan.fine_charged) }}</span>
+                <span class="badge badge-success" style="margin-left:.3rem">Paid</span>
+              {% else %}
+                <span class="text-red">${{ "%.2f"|format(loan.fine_charged) }}</span>
+                <span class="badge badge-danger" style="margin-left:.3rem">Unpaid</span>
+              {% endif %}
+            {% elif loan.fine_amount() > 0 %}
               <span class="text-red">${{ "%.2f"|format(loan.fine_amount()) }}</span>
-            {% else %}—{% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
           </td>
           <td>
             {% if loan.status == 'active' %}
               <form method="POST" action="{{ url_for('admin.return_book', loan_id=loan.id) }}">
                 <button type="submit" class="btn btn-sm btn-primary">Return</button>
+              </form>
+            {% elif loan.fine_charged and not loan.fine_paid %}
+              <form method="POST" action="{{ url_for('admin.pay_fine', loan_id=loan.id) }}">
+                <button type="submit" class="btn btn-sm btn-success">
+                  <i data-lucide="check"></i> Pay Fine
+                </button>
               </form>
             {% else %}
               <span class="text-muted">—</span>
