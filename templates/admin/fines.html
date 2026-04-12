@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Fine Management — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Fine Management</h2>
+    <p class="page-subtitle">Track and collect overdue fines from students</p>
+  </div>
+  <a href="{{ url_for('admin.overdue') }}" class="btn btn-outline">
+    <i data-lucide="alert-circle"></i> View Overdue
+  </a>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1.75rem;">
+  <div class="stat-card stat-red">
+    <div class="stat-icon"><i data-lucide="circle-dollar-sign"></i></div>
+    <div class="stat-info">
+      <div class="stat-number">${{ "%.2f"|format(total_outstanding) }}</div>
+      <div class="stat-label">Outstanding</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
+    <div class="stat-info">
+      <div class="stat-number">${{ "%.2f"|format(total_collected) }}</div>
+      <div class="stat-label">Collected</div>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-icon"><i data-lucide="file-text"></i></div>
+    <div class="stat-info">
+      <div class="stat-number">{{ unpaid|length }}</div>
+      <div class="stat-label">Unpaid Fines</div>
+    </div>
+  </div>
+</div>
+
+<!-- Outstanding Fines -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h3 class="text-red"><i data-lucide="circle-dollar-sign"></i> Outstanding Fines</h3>
+    <span class="badge badge-danger">{{ unpaid|length }} unpaid</span>
+  </div>
+  <div class="card-body">
+    {% if unpaid %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Book</th>
+          <th>Due Date</th>
+          <th>Returned</th>
+          <th>Fine Amount</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in unpaid %}
+        <tr>
+          <td>
+            <span class="fw-600">{{ loan.student.name }}</span><br>
+            <small class="text-muted">{{ loan.student.email }}</small>
+            {% if loan.student.phone_number %}
+              <br><small class="text-muted"><i data-lucide="phone" style="width:11px;height:11px"></i> {{ loan.student.phone_number }}</small>
+            {% endif %}
+          </td>
+          <td>
+            <span class="fw-600">{{ loan.copy.book.title }}</span><br>
+            <small class="text-muted">{{ loan.copy.copy_code }}</small>
+          </td>
+          <td><span class="badge badge-danger">{{ loan.due_date.strftime('%b %d, %Y') }}</span></td>
+          <td>{{ loan.return_date.strftime('%b %d, %Y') if loan.return_date else '—' }}</td>
+          <td class="text-red fw-600">${{ "%.2f"|format(loan.fine_charged) }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.pay_fine', loan_id=loan.id) }}" style="display:inline">
+              <button type="submit" class="btn btn-sm btn-success">
+                <i data-lucide="check"></i> Mark Paid
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" class="fw-600 text-right" style="text-align:right">Total Outstanding:</td>
+          <td class="text-red fw-600">${{ "%.2f"|format(total_outstanding) }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon empty-state-icon--green"><i data-lucide="check-circle-2"></i></div>
+      <h4>No Outstanding Fines</h4>
+      <p>All returned books have had their fines collected.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Paid Fines History -->
+{% if paid %}
+<div class="card">
+  <div class="card-header">
+    <h3><i data-lucide="history"></i> Collected Fines (Recent 50)</h3>
+    <span class="badge badge-success">${{ "%.2f"|format(total_collected) }} total</span>
+  </div>
+  <div class="card-body">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Book</th>
+          <th>Fine Amount</th>
+          <th>Returned</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in paid %}
+        <tr>
+          <td>{{ loan.student.name }}<br><small class="text-muted">{{ loan.student.email }}</small></td>
+          <td>{{ loan.copy.book.title }}</td>
+          <td class="text-green fw-600">${{ "%.2f"|format(loan.fine_charged) }}</td>
+          <td>{{ loan.return_date.strftime('%b %d, %Y') if loan.return_date else '—' }}</td>
+          <td><span class="badge badge-success"><i data-lucide="check" style="width:11px;height:11px"></i> Paid</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
