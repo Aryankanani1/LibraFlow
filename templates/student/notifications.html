@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}My Notifications — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>My Notifications</h2>
+    <p class="page-subtitle">Emails and SMS messages sent to you by LibraFlow</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    {% if notifications %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Channel</th>
+          <th>Subject / Message</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in notifications %}
+        <tr>
+          <td><small class="text-muted">{{ n.sent_at.strftime('%b %d, %Y %H:%M') }}</small></td>
+          <td>
+            {% if n.type == 'email' %}
+              <span class="badge badge-blue"><i data-lucide="mail" style="width:11px;height:11px"></i> Email</span>
+            {% else %}
+              <span class="badge badge-secondary"><i data-lucide="message-square" style="width:11px;height:11px"></i> SMS</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if n.subject and n.subject != 'SMS' %}
+              <span class="fw-600">{{ n.subject }}</span><br>
+            {% endif %}
+            <small class="text-muted" style="white-space:pre-wrap;line-height:1.5">{{ n.message[:200] }}{% if n.message|length > 200 %}…{% endif %}</small>
+          </td>
+          <td>
+            {% if n.status == 'sent' %}
+              <span class="badge badge-success">Delivered</span>
+            {% elif n.status == 'pending' %}
+              <span class="badge badge-warning">Pending</span>
+            {% else %}
+              <span class="badge badge-danger">Failed</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i data-lucide="bell-off"></i></div>
+      <h4>No Notifications Yet</h4>
+      <p>You'll receive notifications here when books are issued, returned, or your reservations are updated.</p>
+      <a href="{{ url_for('student.search') }}" class="btn btn-primary">Search Books</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Notifications — LibraFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Notifications</h2>
+    <p class="page-subtitle">Email &amp; SMS log — all messages sent to students</p>
+  </div>
+  <form method="POST" action="{{ url_for('admin.send_overdue_reminders') }}">
+    <button type="submit" class="btn btn-primary">
+      <i data-lucide="send"></i> Send Overdue Reminders
+    </button>
+  </form>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 1.75rem;">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i data-lucide="bell"></i></div>
+    <div class="stat-info">
+      <div class="stat-number">{{ counts.total }}</div>
+      <div class="stat-label">Total Sent</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
+    <div class="stat-info">
+      <div class="stat-number">{{ counts.sent }}</div>
+      <div class="stat-label">Delivered</div>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-icon"><i data-lucide="clock"></i></div>
+    <div class="stat-info">
+      <div class="stat-number">{{ counts.pending }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-icon"><i data-lucide="x-circle"></i></div>
+    <div class="stat-info">
+      <div class="stat-number">{{ counts.failed }}</div>
+      <div class="stat-label">Failed</div>
+    </div>
+  </div>
+</div>
+
+<!-- Info banner when mail/SMS not configured -->
+<div class="alert alert-info" style="margin-bottom:1.25rem">
+  <i data-lucide="info"></i>
+  <span>Notifications with <strong>Pending</strong> status mean email/SMS is not yet configured.
+  Set <code>MAIL_USERNAME</code>, <code>MAIL_PASSWORD</code>, and optionally <code>TWILIO_*</code> environment variables to enable live delivery.</span>
+</div>
+
+<!-- Filters -->
+<div class="filter-tabs" style="margin-bottom:1.25rem">
+  <a href="{{ url_for('admin.notifications', type='all', status=status) }}"
+     class="filter-tab {% if ntype == 'all' %}active{% endif %}">All Types</a>
+  <a href="{{ url_for('admin.notifications', type='email', status=status) }}"
+     class="filter-tab {% if ntype == 'email' %}active{% endif %}">
+     <i data-lucide="mail" style="width:13px;height:13px"></i> Email</a>
+  <a href="{{ url_for('admin.notifications', type='sms', status=status) }}"
+     class="filter-tab {% if ntype == 'sms' %}active{% endif %}">
+     <i data-lucide="message-square" style="width:13px;height:13px"></i> SMS</a>
+  &nbsp;|&nbsp;
+  <a href="{{ url_for('admin.notifications', type=ntype, status='all') }}"
+     class="filter-tab {% if status == 'all' %}active{% endif %}">All Status</a>
+  <a href="{{ url_for('admin.notifications', type=ntype, status='sent') }}"
+     class="filter-tab {% if status == 'sent' %}active{% endif %}">Sent</a>
+  <a href="{{ url_for('admin.notifications', type=ntype, status='pending') }}"
+     class="filter-tab {% if status == 'pending' %}active{% endif %}">Pending</a>
+  <a href="{{ url_for('admin.notifications', type=ntype, status='failed') }}"
+     class="filter-tab {% if status == 'failed' %}active{% endif %}">Failed</a>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    {% if notifications %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Type</th>
+          <th>Recipient</th>
+          <th>Subject / Message</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in notifications %}
+        <tr>
+          <td><small class="text-muted">{{ n.sent_at.strftime('%b %d, %Y %H:%M') }}</small></td>
+          <td>
+            {% if n.type == 'email' %}
+              <span class="badge badge-blue"><i data-lucide="mail" style="width:11px;height:11px"></i> Email</span>
+            {% else %}
+              <span class="badge badge-secondary"><i data-lucide="message-square" style="width:11px;height:11px"></i> SMS</span>
+            {% endif %}
+          </td>
+          <td>
+            {{ n.user.name }}<br>
+            <small class="text-muted">{{ n.user.email }}</small>
+          </td>
+          <td>
+            {% if n.subject and n.subject != 'SMS' %}
+              <span class="fw-600">{{ n.subject }}</span><br>
+            {% endif %}
+            <small class="text-muted" style="white-space:pre-wrap;line-height:1.4">{{ n.message[:120] }}{% if n.message|length > 120 %}…{% endif %}</small>
+          </td>
+          <td>
+            {% if n.status == 'sent' %}
+              <span class="badge badge-success">Sent</span>
+            {% elif n.status == 'pending' %}
+              <span class="badge badge-warning">Pending</span>
+            {% else %}
+              <span class="badge badge-danger">Failed</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i data-lucide="bell-off"></i></div>
+      <h4>No Notifications Yet</h4>
+      <p>Notifications will appear here when books are issued, returned, or reservations are updated.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -33,6 +33,12 @@
       <a href="{{ url_for('student.map') }}"
          class="nav-link {% if request.endpoint == 'student.map' %}active{% endif %}">
          <i data-lucide="map"></i> Library Map</a>
+      <a href="{{ url_for('student.notifications') }}"
+         class="nav-link {% if request.endpoint == 'student.notifications' %}active{% endif %}">
+         <i data-lucide="bell"></i> Notifications
+         {% set unread = current_user.notifications.filter_by(read=False).count() %}
+         {% if unread > 0 %}<span class="notif-badge">{{ unread }}</span>{% endif %}
+      </a>
     {% else %}
       <a href="{{ url_for('admin.dashboard') }}"
          class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
@@ -49,12 +55,24 @@
       <a href="{{ url_for('admin.overdue') }}"
          class="nav-link {% if request.endpoint == 'admin.overdue' %}active{% endif %}">
          <i data-lucide="alert-circle"></i> Overdue</a>
+      <a href="{{ url_for('admin.fines') }}"
+         class="nav-link {% if request.endpoint in ['admin.fines','admin.pay_fine'] %}active{% endif %}">
+         <i data-lucide="banknote"></i> Fines</a>
       <a href="{{ url_for('admin.scan_barcode') }}"
          class="nav-link {% if request.endpoint == 'admin.scan_barcode' %}active{% endif %}">
          <i data-lucide="scan-line"></i> Scan</a>
       <a href="{{ url_for('admin.reports') }}"
          class="nav-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
          <i data-lucide="bar-chart-2"></i> Reports</a>
+      <a href="{{ url_for('admin.notifications') }}"
+         class="nav-link {% if request.endpoint in ['admin.notifications','admin.send_overdue_reminders'] %}active{% endif %}">
+         <i data-lucide="bell"></i> Notifications
+         {% set pending_notifs = namespace(count=0) %}
+         {# pending count shown as badge #}
+      </a>
+      <a href="{{ url_for('admin.staff') }}"
+         class="nav-link {% if request.endpoint == 'admin.staff' %}active{% endif %}">
+         <i data-lucide="users"></i> Staff</a>
     {% endif %}
   </div>
 

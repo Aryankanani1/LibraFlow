@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from models import db, Book, BookCopy, Loan, Reservation, Review
+from models import db, Book, BookCopy, Loan, Reservation, Review, Notification
 from functools import wraps
 import json
+from notifications import notify_loan_issued
 
 student_bp = Blueprint('student', __name__, url_prefix='/student')
 
@@ -110,6 +111,7 @@ def borrow(copy_id):
     copy.status = 'issued'
     db.session.add(loan)
     db.session.commit()
+    notify_loan_issued(loan)
     flash(f'Book issued! Due date: {due_date.strftime("%B %d, %Y")}', 'success')
     return redirect(url_for('student.dashboard'))
 
@@ -255,3 +257,19 @@ def map():
                            highlight_category=highlight_category,
                            highlight_title=highlight_title,
                            highlight_msg=highlight_msg)
+
+
+@student_bp.route('/notifications')
+@login_required
+@student_required
+def notifications():
+    all_notifs = current_user.notifications.order_by(
+        Notification.sent_at.desc()
+    ).limit(100).all()
+    # Mark all as read
+    unread = current_user.notifications.filter_by(read=False).all()
+    for n in unread:
+        n.read = True
+    if unread:
+        db.session.commit()
+    return render_template('student/notifications.html', notifications=all_notifs)

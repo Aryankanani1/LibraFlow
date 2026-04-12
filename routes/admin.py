@@ -1,13 +1,18 @@
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from models import db, User, Book, BookCopy, Loan, Reservation, Report, Review
+from models import db, User, Book, BookCopy, Loan, Reservation, Report, Review, Notification
 from functools import wraps
 import urllib.request
 import urllib.parse
 import json
 import ssl
 import certifi
+from notifications import (
+    notify_loan_issued, notify_loan_returned,
+    notify_reservation_approved, notify_reservation_rejected,
+    notify_overdue_reminder, notify_fine_paid,
+)
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -171,6 +176,7 @@ def issue_book():
 
         db.session.add(loan)
         db.session.commit()
+        notify_loan_issued(loan)
         flash(f'Book issued to {student.name}. Due: {due_date.strftime("%B %d, %Y")}', 'success')
         return redirect(url_for('admin.loans'))
 
@@ -186,11 +192,12 @@ def return_book(loan_id):
         flash('This loan is already closed.', 'warning')
         return redirect(url_for('admin.loans'))
     loan.mark_returned()
-    fine = loan.fine_amount()
+    notify_loan_returned(loan)
+    fine = loan.fine_charged or 0.0
     if fine > 0:
-        flash(f'Book returned. Fine: ${fine:.2f}', 'warning')
+        flash(f'Book returned. Fine charged: ${fine:.2f}', 'warning')
     else:
-        flash('Book returned successfully.', 'success')
+        flash('Book returned successfully. No fines.', 'success')
     return redirect(url_for('admin.loans'))
 
 
@@ -216,6 +223,7 @@ def reservations():
 def approve_reservation(reservation_id):
     reservation, message = current_user.approve_request(reservation_id)
     if reservation:
+        notify_reservation_approved(reservation)
         flash(message, 'success')
     else:
         flash(message, 'danger')
@@ -232,6 +240,7 @@ def reject_reservation(reservation_id):
         if reservation.copy:
             reservation.copy.status = 'available'
         db.session.commit()
+        notify_reservation_rejected(reservation)
         flash('Reservation rejected.', 'info')
     return redirect(url_for('admin.reservations'))
 
@@ -413,3 +422,89 @@ def google_books_lookup():
         })
 
     return jsonify(results)
+
+
+# ── Fine Management ──────────────────────────────────────────────────────────
+
+@admin_bp.route('/fines')
+@login_required
+@librarian_required
+def fines():
+    unpaid = Loan.query.filter(
+        Loan.fine_charged > 0,
+        Loan.fine_paid == False  # noqa: E712
+    ).order_by(Loan.return_date.desc()).all()
+    paid = Loan.query.filter(
+        Loan.fine_charged > 0,
+        Loan.fine_paid == True  # noqa: E712
+    ).order_by(Loan.return_date.desc()).limit(50).all()
+    total_outstanding = sum(l.fine_charged for l in unpaid)
+    total_collected   = sum(l.fine_charged for l in paid)
+    return render_template('admin/fines.html',
+                           unpaid=unpaid, paid=paid,
+                           total_outstanding=total_outstanding,
+                           total_collected=total_collected)
+
+
+@admin_bp.route('/fines/<int:loan_id>/pay', methods=['POST'])
+@login_required
+@librarian_required
+def pay_fine(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
+    if loan.fine_charged and not loan.fine_paid:
+        loan.fine_paid = True
+        db.session.commit()
+        notify_fine_paid(loan)
+        flash(f'Fine of ${loan.fine_charged:.2f} marked as paid for {loan.student.name}.', 'success')
+    else:
+        flash('No outstanding fine for this loan.', 'warning')
+    return redirect(url_for('admin.fines'))
+
+
+# ── Notification Log ─────────────────────────────────────────────────────────
+
+@admin_bp.route('/notifications')
+@login_required
+@librarian_required
+def notifications():
+    ntype  = request.args.get('type', 'all')
+    status = request.args.get('status', 'all')
+
+    q = Notification.query
+    if ntype != 'all':
+        q = q.filter_by(type=ntype)
+    if status != 'all':
+        q = q.filter_by(status=status)
+    all_notifs = q.order_by(Notification.sent_at.desc()).limit(200).all()
+
+    counts = {
+        'total':   Notification.query.count(),
+        'sent':    Notification.query.filter_by(status='sent').count(),
+        'pending': Notification.query.filter_by(status='pending').count(),
+        'failed':  Notification.query.filter_by(status='failed').count(),
+    }
+    return render_template('admin/notifications.html',
+                           notifications=all_notifs,
+                           ntype=ntype, status=status, counts=counts)
+
+
+@admin_bp.route('/notifications/send-overdue-reminders', methods=['POST'])
+@login_required
+@librarian_required
+def send_overdue_reminders():
+    active_loans = Loan.query.filter_by(status='active').all()
+    overdue = [l for l in active_loans if l.is_overdue()]
+    for loan in overdue:
+        notify_overdue_reminder(loan)
+    flash(f'Overdue reminders sent to {len(overdue)} student(s).', 'success')
+    return redirect(url_for('admin.notifications'))
+
+
+# ── Staff Management ─────────────────────────────────────────────────────────
+
+@admin_bp.route('/staff')
+@login_required
+@librarian_required
+def staff():
+    librarians = User.query.filter_by(role='librarian').order_by(User.name).all()
+    return render_template('admin/staff.html', librarians=librarians)

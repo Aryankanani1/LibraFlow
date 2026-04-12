@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_login import LoginManager
+from flask_mail import Mail
 from config import Config
 from models import db, User
 from routes.auth import auth_bp
@@ -7,12 +8,15 @@ from routes.books import books_bp
 from routes.student import student_bp
 from routes.admin import admin_bp
 
+mail = Mail()
+
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
     db.init_app(app)
+    mail.init_app(app)
 
     login_manager = LoginManager(app)
     login_manager.login_view = 'auth.login'
@@ -30,9 +34,35 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        _migrate_db()
         _seed_demo_data()
 
     return app
+
+
+def _migrate_db():
+    """Add new columns to existing SQLite tables without dropping data."""
+    from sqlalchemy import text
+    with db.engine.connect() as conn:
+        # Helper: check if a column exists in a table
+        def has_col(table, col):
+            rows = conn.execute(text(f"PRAGMA table_info({table})")).fetchall()
+            return any(r[1] == col for r in rows)
+
+        # users: phone_number
+        if not has_col('users', 'phone_number'):
+            conn.execute(text("ALTER TABLE users ADD COLUMN phone_number VARCHAR(20)"))
+
+        # loans: fine_charged, fine_paid
+        if not has_col('loans', 'fine_charged'):
+            conn.execute(text("ALTER TABLE loans ADD COLUMN fine_charged FLOAT"))
+        if not has_col('loans', 'fine_paid'):
+            conn.execute(text("ALTER TABLE loans ADD COLUMN fine_paid BOOLEAN NOT NULL DEFAULT 0"))
+
+        conn.commit()
+
+    # notifications table is created by db.create_all() above
+    # (it's a new table so it'll be created automatically if missing)
 
 
 def _seed_demo_data():
