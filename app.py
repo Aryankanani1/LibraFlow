@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_mail import Mail
+from dotenv import load_dotenv
+load_dotenv()  # loads .env before Config reads os.environ
 from config import Config
 from models import db, User
 from routes.auth import auth_bp
