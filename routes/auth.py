@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User
 
@@ -53,6 +53,14 @@ def register():
         role = request.form.get('role', 'student')
         student_id = request.form.get('student_id', '').strip()
         employee_id = request.form.get('employee_id', '').strip()
+        phone_number = request.form.get('phone_number', '').strip()
+
+        # Librarian registration requires the staff invite code
+        if role == 'librarian':
+            code = request.form.get('librarian_code', '').strip()
+            if code != current_app.config.get('LIBRARIAN_CODE'):
+                flash('Invalid staff registration code. Contact your administrator.', 'danger')
+                return render_template('register.html')
 
         if User.query.filter_by(email=email).first():
             flash('Email already registered.', 'danger')
@@ -60,7 +68,8 @@ def register():
 
         user = User(name=name, email=email, role=role,
                     student_id=student_id or None,
-                    employee_id=employee_id or None)
+                    employee_id=employee_id or None,
+                    phone_number=phone_number or None)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
