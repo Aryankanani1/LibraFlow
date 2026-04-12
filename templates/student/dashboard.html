@@ -2,6 +2,13 @@
 {% block title %}My Dashboard — LibraFlow{% endblock %}
 
 {% block content %}
+{% set outstanding_fine = namespace(total=0) %}
+{% for loan in current_user.loans_as_student.all() %}
+  {% if loan.fine_charged and not loan.fine_paid %}
+    {% set outstanding_fine.total = outstanding_fine.total + loan.fine_charged %}
+  {% endif %}
+{% endfor %}
+
 <div class="welcome-banner">
   <div>
     <h2>Welcome back, {{ current_user.name.split()[0] }}</h2>
@@ -22,13 +29,6 @@
   <strong>Outstanding Fine:</strong> You have an unpaid fine of ${{ "%.2f"|format(outstanding_fine.total) }}. Please pay at the library desk.
 </div>
 {% endif %}
-
-{% set outstanding_fine = namespace(total=0) %}
-{% for loan in current_user.loans_as_student.all() %}
-  {% if loan.fine_charged and not loan.fine_paid %}
-    {% set outstanding_fine.total = outstanding_fine.total + loan.fine_charged %}
-  {% endif %}
-{% endfor %}
 
 <div class="stats-grid stats-grid-4">
   <div class="stat-card stat-blue">
