@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - libraflow_data:/data
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite:////data/libraflow.db
+    restart: unless-stopped
+
+volumes:
+  libraflow_data:
