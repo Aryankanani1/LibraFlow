@@ -5,9 +5,9 @@
 
 :root {
   /* One accent color */
-  --primary:    #0d9488;
-  --primary-dk: #0f766e;
-  --primary-lt: #f0fdfa;
+  --primary:    #4f46e5;
+  --primary-dk: #3730a3;
+  --primary-lt: #eef2ff;
 
   /* Status — used only for badges and key indicators */
   --success:    #16a34a;
