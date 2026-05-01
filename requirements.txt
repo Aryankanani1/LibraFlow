@@ -7,3 +7,4 @@ Werkzeug==3.1.3
 SQLAlchemy==2.0.36
 certifi
 twilio>=8.0.0        # optional — SMS via Twilio (set TWILIO_* env vars to enable)
+gunicorn
